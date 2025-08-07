@@ -1,5 +1,6 @@
 const appStoreScraper = require('app-store-scraper');
-const gplay = require('google-play-scraper');
+const gplayModule = require('google-play-scraper');
+const gplay = gplayModule.default || gplayModule; // Handle both CommonJS and ES module exports
 const fs = require('fs-extra');
 const path = require('path');
 
@@ -44,12 +45,23 @@ async function fetchGooglePlayReviews(appId, country = 'us', limit = 100) {
   try {
     console.log(`Fetching Google Play Store reviews for app ID: ${appId}`);
     
-    const reviews = await gplay.reviews({
+    const reviewsResponse = await gplay.reviews({
       appId: appId,
       country: country,
       sort: gplay.sort.NEWEST,
       num: limit
     });
+
+    console.log('Google Play reviews response type:', typeof reviewsResponse);
+    console.log('Google Play reviews response keys:', Object.keys(reviewsResponse));
+    
+    // The response might be an object with a data property containing the reviews array
+    const reviews = reviewsResponse.data || reviewsResponse.reviews || reviewsResponse;
+    
+    if (!Array.isArray(reviews)) {
+      console.error('Reviews is not an array:', reviews);
+      throw new Error('Invalid response format from Google Play Store API');
+    }
 
     // Transform the reviews to match our expected format
     const transformedReviews = reviews.map(review => ({
