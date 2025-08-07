@@ -32,7 +32,7 @@ const Analysis = () => {
 
   const fetchAnalysis = async () => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8888/api/analysis/summary/${appId}`);
+      const response = await axios.get(`/api/analysis/summary/${appId}`);
       if (response.data.success) {
         setAnalysis(response.data.data);
       } else {

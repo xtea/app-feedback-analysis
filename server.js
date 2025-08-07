@@ -4,13 +4,13 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8888;
 const isProduction = process.env.NODE_ENV === 'production';
 
-// CORS configuration - allow all origins
+// CORS configuration - allow React dev server and production
 app.use(cors({
-  origin: '*', // Allow all origins
-  credentials: false, // Must be false when using wildcard origin
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // React dev server
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   optionsSuccessStatus: 200

@@ -61,7 +61,7 @@ const Home = () => {
     if (currentJob && jobStatus?.status && !['completed', 'failed'].includes(jobStatus.status)) {
       pollInterval = setInterval(async () => {
         try {
-          const response = await axios.get(`http://127.0.0.1:8888/api/jobs/status/${currentJob}`);
+          const response = await axios.get(`/api/jobs/status/${currentJob}`);
           if (response.data.success) {
             setJobStatus(response.data.data);
             
@@ -106,7 +106,7 @@ const Home = () => {
 
     try {
       // Submit analysis job
-      const response = await axios.post('http://127.0.0.1:8888/api/jobs/analyze', {
+      const response = await axios.post('/api/jobs/analyze', {
         appId: appId.trim(),
         storeType,
         limit: 100

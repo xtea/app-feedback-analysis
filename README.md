@@ -53,19 +53,35 @@ A web-based tool to collect and analyze app store feedback from Apple App Store 
 
 ### Development Mode
 
+**Option A: Use the development script (Recommended)**
+```bash
+chmod +x dev-start.sh
+./dev-start.sh
+```
+
+**Option B: Start manually**
+
 1. **Start the backend server**
    ```bash
-   npm run dev
+   node server.js
    ```
 
 2. **Start the frontend (in a new terminal)**
    ```bash
-   npm run client
+   cd client
+   npm start
    ```
 
 3. **Access the application**
    - Backend API: http://localhost:8888
    - Frontend: http://localhost:3000
+   - **Proxy**: The React app automatically proxies API requests to the backend
+
+### 🔧 Development Configuration
+
+- **CORS**: Configured to allow React dev server connections
+- **Proxy**: Frontend uses relative URLs that are proxied to backend
+- **Hot Reload**: Both frontend and backend support hot reloading
 
 ### Production Mode
 
@@ -97,12 +113,18 @@ A web-based tool to collect and analyze app store feedback from Apple App Store 
 
 ## API Endpoints
 
-### App Store Routes
+### Job Management (Async Analysis)
+- `POST /api/jobs/analyze` - Submit analysis job (returns job ID)
+- `GET /api/jobs/status/:jobId` - Check job status and progress
+- `GET /api/jobs/result/:jobId` - Get completed analysis results
+- `GET /api/jobs/app/:appId` - Get all jobs for an app
+
+### App Store Routes (Direct)
 - `POST /api/appstore/fetch-apple` - Fetch Apple App Store reviews
 - `POST /api/appstore/fetch-google` - Fetch Google Play Store reviews
 
-### Analysis Routes
-- `POST /api/analysis/analyze` - Analyze reviews using LLM
+### Analysis Routes (Legacy)
+- `POST /api/analysis/analyze` - Analyze reviews using LLM (synchronous)
 - `GET /api/analysis/summary/:appId` - Get analysis summary
 
 ## Project Structure
