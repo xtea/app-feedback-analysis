@@ -82,7 +82,9 @@ async function analyzeReviews(reviews, appId, storeType) {
 // Analyze positive reviews to extract features and user experiences
 async function analyzePositiveReviews(reviews) {
   try {
+    console.log(`[POSITIVE ANALYSIS] Starting analysis of ${reviews.length} positive reviews`);
     const reviewsText = limitReviewText(reviews, 8000);
+    console.log(`[POSITIVE ANALYSIS] Prepared ${reviewsText.length} characters of review text`);
     
     const prompt = `Analyze the following positive app reviews and extract:
 1. Key features and functionalities that users love
@@ -106,6 +108,7 @@ Format the response as JSON with the following structure:
   "strengthHighlights": ["highlight1", "highlight2", ...]
 }`;
 
+    console.log('[POSITIVE ANALYSIS] Sending request to OpenAI...');
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
@@ -113,9 +116,12 @@ Format the response as JSON with the following structure:
     });
 
     const response = completion.choices[0].message.content;
-    return JSON.parse(response);
+    console.log('[POSITIVE ANALYSIS] Received response from OpenAI, parsing JSON...');
+    const parsedResponse = JSON.parse(response);
+    console.log('[POSITIVE ANALYSIS] Successfully completed analysis');
+    return parsedResponse;
   } catch (error) {
-    console.error('Error analyzing positive reviews:', error);
+    console.error('[POSITIVE ANALYSIS] Error analyzing positive reviews:', error);
     return {
       topFeatures: [],
       positiveExperiences: [],
@@ -128,7 +134,9 @@ Format the response as JSON with the following structure:
 // Analyze negative reviews to extract issues and improvements
 async function analyzeNegativeReviews(reviews) {
   try {
+    console.log(`[NEGATIVE ANALYSIS] Starting analysis of ${reviews.length} negative reviews`);
     const reviewsText = limitReviewText(reviews, 8000);
+    console.log(`[NEGATIVE ANALYSIS] Prepared ${reviewsText.length} characters of review text`);
     
     const prompt = `Analyze the following negative app reviews and extract:
 1. Main issues and problems users are facing
@@ -159,6 +167,7 @@ Format the response as JSON with the following structure:
   "priorityActions": ["action1", "action2", ...]
 }`;
 
+    console.log('[NEGATIVE ANALYSIS] Sending request to OpenAI...');
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
@@ -166,9 +175,12 @@ Format the response as JSON with the following structure:
     });
 
     const response = completion.choices[0].message.content;
-    return JSON.parse(response);
+    console.log('[NEGATIVE ANALYSIS] Received response from OpenAI, parsing JSON...');
+    const parsedResponse = JSON.parse(response);
+    console.log('[NEGATIVE ANALYSIS] Successfully completed analysis');
+    return parsedResponse;
   } catch (error) {
-    console.error('Error analyzing negative reviews:', error);
+    console.error('[NEGATIVE ANALYSIS] Error analyzing negative reviews:', error);
     return {
       topIssues: [],
       criticalProblems: [],
