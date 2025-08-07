@@ -64,7 +64,7 @@ A web-based tool to collect and analyze app store feedback from Apple App Store 
    ```
 
 3. **Access the application**
-   - Backend API: http://localhost:5000
+   - Backend API: http://localhost:8888
    - Frontend: http://localhost:3000
 
 ### Production Mode
