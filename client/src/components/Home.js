@@ -29,6 +29,7 @@ const Home = () => {
   const [error, setError] = useState('');
   const [currentJob, setCurrentJob] = useState(null);
   const [jobStatus, setJobStatus] = useState(null);
+  const [isSimulating, setIsSimulating] = useState(false);
   const navigate = useNavigate();
 
   // Store detection from raw input (URL/package/numeric)
@@ -98,11 +99,11 @@ const Home = () => {
     setJobStatus(null);
   };
 
-  // Poll job status every 2 seconds
+  // Poll job status every 2 seconds (disabled during cache-hit simulation)
   useEffect(() => {
     let pollInterval;
     
-    if (currentJob && jobStatus?.status && !['completed', 'failed'].includes(jobStatus.status)) {
+    if (!isSimulating && currentJob && jobStatus?.status && !['completed', 'failed'].includes(jobStatus.status)) {
       pollInterval = setInterval(async () => {
         try {
           const response = await axios.get(`/api/jobs/status/${currentJob}`);
@@ -135,7 +136,7 @@ const Home = () => {
         clearInterval(pollInterval);
       }
     };
-  }, [currentJob, jobStatus?.status, navigate]);
+  }, [currentJob, jobStatus?.status, navigate, isSimulating]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -165,12 +166,30 @@ const Home = () => {
         setJobStatus(job);
         console.log(`Created analysis job ${job.jobId} for app ${job.appId}`);
 
-        // If cache hit: job is already completed; redirect immediately
+        // If cache hit: simulate progress for 2-3 seconds before redirect
         if (job.status === 'completed') {
-          setIsLoading(false);
-          setTimeout(() => {
-            navigate(`/analysis/${job.appId}`);
-          }, 200);
+          setIsSimulating(true);
+          let simulated = 0;
+          const targetMs = 2000 + Math.floor(Math.random() * 1000); // 2-3s
+          const start = Date.now();
+          const tick = () => {
+            const elapsed = Date.now() - start;
+            simulated = Math.min(100, Math.floor((elapsed / targetMs) * 100));
+            setJobStatus(prev => ({
+              ...(prev || job),
+              status: 'analyzing',
+              progress: Math.max(prev?.progress || 0, simulated),
+              message: 'Preparing cached analysis...'
+            }));
+            if (elapsed >= targetMs) {
+              setIsSimulating(false);
+              setIsLoading(false);
+              navigate(`/analysis/${job.appId}`);
+            } else {
+              requestAnimationFrame(tick);
+            }
+          };
+          requestAnimationFrame(tick);
           return;
         }
 
