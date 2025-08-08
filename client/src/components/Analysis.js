@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const Analysis = () => {
   const { appId } = useParams();
@@ -84,6 +86,140 @@ const Analysis = () => {
 
   const { summary, positiveAnalysis, negativeAnalysis } = analysis;
 
+  // Rasterize inline SVGs (e.g., Recharts) to PNG <img> so html2canvas reliably captures charts
+  const rasterizeSvgsForExport = async (container) => {
+    const svgNodes = Array.from(container.querySelectorAll('svg'));
+    const replacements = [];
+
+    await Promise.all(
+      svgNodes.map(async (svg) => {
+        try {
+          const rect = svg.getBoundingClientRect();
+          const fallbackWidth = svg.viewBox?.baseVal?.width || parseInt(svg.getAttribute('width') || '0', 10) || 0;
+          const fallbackHeight = svg.viewBox?.baseVal?.height || parseInt(svg.getAttribute('height') || '0', 10) || 0;
+          const width = Math.ceil(rect.width || fallbackWidth);
+          const height = Math.ceil(rect.height || fallbackHeight);
+          if (!width || !height) return;
+
+          const svgClone = svg.cloneNode(true);
+          svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+          svgClone.setAttribute('width', String(width));
+          svgClone.setAttribute('height', String(height));
+
+          const serializer = new XMLSerializer();
+          const svgString = serializer.serializeToString(svgClone);
+          const svgDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+
+          const image = new Image();
+          image.src = svgDataUri;
+          await new Promise((resolve) => {
+            image.onload = resolve;
+            image.onerror = resolve; // continue even if an SVG fails
+          });
+
+          const deviceScale = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+          const offscreen = document.createElement('canvas');
+          offscreen.width = width * deviceScale;
+          offscreen.height = height * deviceScale;
+          const ctx = offscreen.getContext('2d');
+          ctx.scale(deviceScale, deviceScale);
+          ctx.drawImage(image, 0, 0, width, height);
+
+          const pngData = offscreen.toDataURL('image/png');
+          const imgEl = new Image();
+          imgEl.src = pngData;
+          imgEl.style.width = `${width}px`;
+          imgEl.style.height = `${height}px`;
+
+          const parent = svg.parentNode;
+          if (!parent) return;
+          parent.replaceChild(imgEl, svg);
+          replacements.push({ parent, imgEl, svg });
+        } catch (_) {
+          // Ignore individual SVG conversion failures and keep going
+        }
+      })
+    );
+
+    return () => {
+      for (const { parent, imgEl, svg } of replacements) {
+        try {
+          parent.replaceChild(svg, imgEl);
+        } catch (_) {
+          // best-effort restore
+        }
+      }
+    };
+  };
+  const handleExportPdf = async () => {
+    const reportEl = document.getElementById('analysis-report');
+    if (!reportEl) return;
+    let revertSvgs = () => {};
+    try {
+      // Replace SVG charts with raster images for reliable capture
+      revertSvgs = await rasterizeSvgsForExport(reportEl);
+
+      // Higher scale for sharpness (closer to original), still controlled
+      const canvas = await html2canvas(reportEl, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+
+      // Create compressed PDF
+      const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
+      const pageWidthMm = pdf.internal.pageSize.getWidth();
+      const pageHeightMm = pdf.internal.pageSize.getHeight();
+      const marginMm = 10;
+      const contentWidthMm = pageWidthMm - marginMm * 2;
+      const contentHeightMm = pageHeightMm - marginMm * 2;
+
+      // We scale the image so canvas.width px == contentWidthMm
+      const pxPerMm = canvas.width / contentWidthMm;
+      const pageHeightPx = Math.floor(contentHeightMm * pxPerMm);
+
+      let currentY = 0;
+      let pageIndex = 0;
+      while (currentY < canvas.height) {
+        const sliceHeightPx = Math.min(pageHeightPx, canvas.height - currentY);
+
+        // Slice the canvas to the current page
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceHeightPx;
+        const ctx = pageCanvas.getContext('2d');
+        ctx.drawImage(
+          canvas,
+          0,
+          currentY,
+          canvas.width,
+          sliceHeightPx,
+          0,
+          0,
+          canvas.width,
+          sliceHeightPx
+        );
+
+        // JPEG with slightly higher quality to improve readability
+        const imgData = pageCanvas.toDataURL('image/jpeg', 1);
+
+        const sliceHeightMm = (sliceHeightPx / pxPerMm);
+        if (pageIndex > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', marginMm, marginMm, contentWidthMm, sliceHeightMm);
+
+        currentY += sliceHeightPx;
+        pageIndex += 1;
+      }
+
+      pdf.save(`analysis_${appId}.pdf`);
+    } catch (e) {
+      console.error('Failed to export PDF:', e);
+    } finally {
+      try { revertSvgs(); } catch (_) {}
+    }
+  };
+
   // Ensure total equals positive + negative per requirement (exclude neutral)
   const totalPosNeg = (summary?.positiveCount || 0) + (summary?.negativeCount || 0);
   const formatNumber = (n) => (typeof n === 'number' ? n.toLocaleString() : '0');
@@ -131,7 +267,7 @@ const Analysis = () => {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <button className="btn-secondary flex items-center">
+              <button className="btn-secondary flex items-center" onClick={handleExportPdf}>
                 <Download className="w-4 h-4 mr-2" />
                 Export Report
               </button>
@@ -144,7 +280,7 @@ const Analysis = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div id="analysis-report" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white">
         {/* Key Metrics Overview */}
         <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-xl p-6 border-l-4 border-blue-500">
