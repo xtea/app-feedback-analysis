@@ -170,17 +170,17 @@ const Home = () => {
         if (job.status === 'completed') {
           setIsSimulating(true);
           let simulated = 0;
-          const targetMs = 2000 + Math.floor(Math.random() * 1000); // 2-3s
+          const targetMs = 3000 + Math.floor(Math.random() * 1000); // 2-3s
           const start = Date.now();
           const tick = () => {
             const elapsed = Date.now() - start;
             simulated = Math.min(100, Math.floor((elapsed / targetMs) * 100));
-            setJobStatus(prev => ({
-              ...(prev || job),
-              status: 'analyzing',
-              progress: Math.max(prev?.progress || 0, simulated),
-              message: 'Preparing cached analysis...'
-            }));
+              setJobStatus(prev => ({
+                ...(prev || job),
+                status: 'analyzing',
+                progress: Math.max(prev?.progress || 0, simulated),
+                message: 'Preparing analysis...'
+              }));
             if (elapsed >= targetMs) {
               setIsSimulating(false);
               setIsLoading(false);
