@@ -22,11 +22,54 @@ import axios from 'axios';
 const Home = () => {
   const [appId, setAppId] = useState('');
   const [storeType, setStoreType] = useState('apple');
+  const [detectedStore, setDetectedStore] = useState(null);
+  const [normalizedFromUrl, setNormalizedFromUrl] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentJob, setCurrentJob] = useState(null);
   const [jobStatus, setJobStatus] = useState(null);
   const navigate = useNavigate();
+
+  // Store detection from raw input (URL/package/numeric)
+  const detectStoreFromInput = (rawInput) => {
+    if (!rawInput || typeof rawInput !== 'string') return null;
+    const input = rawInput.trim();
+    // URL handling
+    if (input.startsWith('http://') || input.startsWith('https://')) {
+      try {
+        const url = new URL(input);
+        const host = url.hostname.toLowerCase();
+        if (host.includes('play.google.com')) {
+          const pkg = url.searchParams.get('id');
+          if (pkg && /^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z0-9_]+)+$/.test(pkg)) {
+            return { appId: pkg, storeType: 'google', reason: 'google_url' };
+          }
+        }
+        if (host.includes('apps.apple.com')) {
+          const match = url.pathname.match(/id(\d{5,})/i);
+          if (match && match[1]) {
+            return { appId: match[1], storeType: 'apple', reason: 'apple_url' };
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    // Numeric Apple ID
+    if (/^\d{5,}$/.test(input)) {
+      return { appId: input, storeType: 'apple', reason: 'numeric_id' };
+    }
+    // Android package pattern
+    if (/^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z0-9_]+)+$/.test(input)) {
+      return { appId: input, storeType: 'google', reason: 'android_package' };
+    }
+    // Apple id embedded
+    const appleIdMatch = input.match(/id(\d{5,})/i);
+    if (appleIdMatch && appleIdMatch[1]) {
+      return { appId: appleIdMatch[1], storeType: 'apple', reason: 'apple_id_in_text' };
+    }
+    return null;
+  };
 
   // Helper function to get user-friendly status messages
   const getStatusMessage = (status) => {
@@ -108,8 +151,11 @@ const Home = () => {
       // Submit analysis job
       const response = await axios.post('/api/jobs/analyze', {
         appId: appId.trim(),
-        storeType,
-        limit: 100
+        // Allow backend to auto-detect based on input
+        storeType: 'auto',
+        // Pagination defaults (can be surfaced in advanced options later)
+        usePagination: true,
+        pageSize: storeType === 'google' ? 100 : undefined,
       });
 
       if (response.data.success) {
@@ -199,11 +245,29 @@ const Home = () => {
                   App Identifier
                 </label>
                 <div className="relative">
-                  <input
-                    type="text"
-                    id="appId"
-                    value={appId}
-                    onChange={(e) => setAppId(e.target.value)}
+                <input
+                  type="text"
+                  id="appId"
+                  value={appId}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setAppId(value);
+                    setNormalizedFromUrl(false);
+                    const detected = detectStoreFromInput(value);
+                    if (detected) {
+                      setDetectedStore(detected.storeType);
+                      // If the detector normalized ID (e.g., from URL), update the field
+                      if (detected.appId && detected.appId !== value) {
+                        setAppId(detected.appId);
+                        setNormalizedFromUrl(true);
+                      }
+                      if (detected.storeType !== storeType) {
+                        setStoreType(detected.storeType);
+                      }
+                    } else {
+                      setDetectedStore(null);
+                    }
+                  }}
                     placeholder="Enter App Store ID or Google Play Package Name"
                     className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
                     disabled={isLoading}
@@ -220,6 +284,18 @@ const Home = () => {
                       <span><strong>Google:</strong> Package name (e.g., com.facebook.katana)</span>
                     </div>
                   </div>
+                  {detectedStore && (
+                    <div className="mt-3 text-sm">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full font-medium ${
+                        detectedStore === 'apple' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                      }`}>
+                        {detectedStore === 'apple' ? 'Detected: Apple App Store' : 'Detected: Google Play Store'}
+                      </span>
+                      {normalizedFromUrl && (
+                        <span className="ml-2 text-gray-500">(Normalized ID from URL)</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

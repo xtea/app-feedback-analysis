@@ -1,11 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const { createJob, getJob, getJobsByAppId, JOB_STATUS } = require('../services/jobService');
+const { detectStoreFromInput } = require('../services/storeDetector');
 
 // API 1: Submit analysis request
 router.post('/analyze', async (req, res) => {
   try {
-    const { appId, storeType = 'apple', country = 'us', limit = 100 } = req.body;
+    const {
+      appId,
+      storeType = 'auto',
+      country = 'us',
+      // single-shot option (non-paginated)
+      limit = 100,
+      // pagination options (maxPages is backend default only)
+      usePagination = true,
+      startPage = 1,
+      pageSize = 100,
+      perPageSave = true,
+    } = req.body;
     
     if (!appId) {
       return res.status(400).json({ 
@@ -14,15 +26,34 @@ router.post('/analyze', async (req, res) => {
       });
     }
 
-    if (!['apple', 'google'].includes(storeType)) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Store type must be either "apple" or "google"' 
-      });
+    let finalStoreType = storeType;
+    let finalAppId = appId?.trim();
+    if (!finalAppId) {
+      return res.status(400).json({ success: false, error: 'App ID is required' });
+    }
+
+    if (storeType === 'auto') {
+      const detected = detectStoreFromInput(finalAppId);
+      if (!detected) {
+        return res.status(400).json({ success: false, error: 'Unable to detect store from input. Provide a valid Apple ID, Google package, or official store URL.' });
+      }
+      finalStoreType = detected.storeType;
+      finalAppId = detected.appId;
+    }
+
+    if (!['apple', 'google'].includes(finalStoreType)) {
+      return res.status(400).json({ success: false, error: 'Store type must be either "apple" or "google" (or use "auto")' });
     }
 
     // Create and start the job
-    const job = createJob(appId, storeType, { country, limit });
+    const job = createJob(finalAppId, finalStoreType, {
+      country,
+      limit,
+      usePagination,
+      startPage,
+      pageSize,
+      perPageSave,
+    });
     
     console.log(`Created analysis job ${job.id} for app ${appId} (${storeType})`);
     
@@ -34,7 +65,8 @@ router.post('/analyze', async (req, res) => {
         storeType: job.storeType,
         status: job.status,
         message: job.message,
-        createdAt: job.createdAt
+        createdAt: job.createdAt,
+        options: job.options,
       }
     });
     

@@ -123,3 +123,124 @@ module.exports = {
   getAppleAppInfo,
   getGooglePlayAppInfo
 }; 
+
+// --------------------
+// Paginated fetchers
+// --------------------
+
+/**
+ * Fetch Apple App Store reviews page-by-page.
+ * Options:
+ * - country: default 'us'
+ * - startPage: default 1
+ * - maxPages: default 5
+ * - perPageSave: boolean to save each page to /data
+ */
+async function fetchAppStoreReviewsPaginated(appId, options = {}) {
+  const country = options.country || 'us';
+  const startPage = options.startPage || 1;
+  const maxPages = 10;
+  const perPageSave = options.perPageSave ?? true;
+
+  const dataDir = path.join(__dirname, '../data');
+  await fs.ensureDir(dataDir);
+
+  const all = [];
+  for (let page = startPage; page < startPage + maxPages; page += 1) {
+    console.log(`[APPLE PAGINATED] Fetching page ${page} for app ${appId}`);
+    // app-store-scraper returns ~50 reviews per page
+    const pageReviews = await appStoreScraper.reviews({
+      id: appId,
+      country,
+      sort: appStoreScraper.sort.RECENT,
+      page,
+    });
+    if (!Array.isArray(pageReviews) || pageReviews.length === 0) {
+      console.log(`[APPLE PAGINATED] No more reviews at page ${page}`);
+      break;
+    }
+    const transformed = pageReviews.map(review => ({
+      rating: review.score,
+      title: review.title || '',
+      content: review.text,
+      author: review.userName,
+      date: review.date,
+      sentiment: review.score >= 4 ? 'positive' : review.score <= 2 ? 'negative' : 'neutral'
+    }));
+    if (perPageSave) {
+      await fs.writeJson(path.join(dataDir, `${appId}_apple_reviews_page_${page}.json`), transformed, { spaces: 2 });
+    }
+    all.push(...transformed);
+  }
+  console.log(`[APPLE PAGINATED] Total accumulated reviews: ${all.length}`);
+  await fs.writeJson(path.join(dataDir, `${appId}_apple_reviews_all.json`), all, { spaces: 2 });
+  return all;
+}
+
+/**
+ * Fetch Google Play reviews page-by-page.
+ * Options:
+ * - country: default 'us'
+ * - pageSize: number of reviews per page (num). Default 100
+ * - maxPages: default 5
+ * - perPageSave: boolean to save each page to /data
+ */
+async function fetchGooglePlayReviewsPaginated(appId, options = {}) {
+  const country = options.country || 'us';
+  const pageSize = options.pageSize || 100;
+  const maxPages = options.maxPages || 100;
+  const perPageSave = options.perPageSave ?? true;
+
+  const dataDir = path.join(__dirname, '../data');
+  await fs.ensureDir(dataDir);
+
+  const all = [];
+  let nextPaginationToken = undefined;
+
+  for (let page = 1; page <= maxPages; page += 1) {
+    console.log(`[GOOGLE PAGINATED] Fetching page ${page} for app ${appId}`);
+    const opts = {
+      appId,
+      country,
+      sort: gplay.sort.NEWEST,
+      num: pageSize,
+    };
+    if (nextPaginationToken) {
+      // google-play-scraper v10 uses nextPaginationToken to continue
+      opts.nextPaginationToken = nextPaginationToken;
+    }
+
+    const response = await gplay.reviews(opts);
+    // Response may be an object { data, nextPaginationToken }
+    const pageReviews = response.data || response.reviews || response;
+    if (!Array.isArray(pageReviews) || pageReviews.length === 0) {
+      console.log(`[GOOGLE PAGINATED] No more reviews at page ${page}`);
+      break;
+    }
+    const transformed = pageReviews.map(review => ({
+      rating: review.score,
+      title: review.title || '',
+      content: review.text,
+      author: review.userName,
+      date: review.date,
+      sentiment: review.score >= 4 ? 'positive' : review.score <= 2 ? 'negative' : 'neutral'
+    }));
+    if (perPageSave) {
+      await fs.writeJson(path.join(dataDir, `${appId}_google_reviews_page_${page}.json`), transformed, { spaces: 2 });
+    }
+    all.push(...transformed);
+
+    nextPaginationToken = response.nextPaginationToken;
+    if (!nextPaginationToken) {
+      console.log('[GOOGLE PAGINATED] No nextPaginationToken, stopping');
+      break;
+    }
+  }
+
+  console.log(`[GOOGLE PAGINATED] Total accumulated reviews: ${all.length}`);
+  await fs.writeJson(path.join(dataDir, `${appId}_google_reviews_all.json`), all, { spaces: 2 });
+  return all;
+}
+
+module.exports.fetchAppStoreReviewsPaginated = fetchAppStoreReviewsPaginated;
+module.exports.fetchGooglePlayReviewsPaginated = fetchGooglePlayReviewsPaginated;

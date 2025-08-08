@@ -6,6 +6,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Model selection (default to GPT-4)
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o';
+
 // Helper function to limit review text size
 function limitReviewText(reviews, maxChars = 8000) {
   let text = '';
@@ -95,7 +98,7 @@ Reviews:
 ${reviewsText}
 
 Please provide a structured analysis with:
-- Top 5 most mentioned features
+- Top 5 most mentioned features that is functional and useful
 - Key positive user experiences
 - What users appreciate most about the app
 - Suggestions for highlighting these strengths
@@ -108,11 +111,10 @@ Format the response as JSON with the following structure:
   "strengthHighlights": ["highlight1", "highlight2", ...]
 }`;
 
-    console.log('[POSITIVE ANALYSIS] Sending request to OpenAI...');
+    console.log(`[POSITIVE ANALYSIS] Sending request to OpenAI (model: ${OPENAI_MODEL})...`);
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: OPENAI_MODEL,
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
     });
 
     const response = completion.choices[0].message.content;
@@ -167,11 +169,10 @@ Format the response as JSON with the following structure:
   "priorityActions": ["action1", "action2", ...]
 }`;
 
-    console.log('[NEGATIVE ANALYSIS] Sending request to OpenAI...');
+    console.log(`[NEGATIVE ANALYSIS] Sending request to OpenAI (model: ${OPENAI_MODEL})...`);
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: OPENAI_MODEL,
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
     });
 
     const response = completion.choices[0].message.content;

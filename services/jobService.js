@@ -1,7 +1,12 @@
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs-extra');
 const path = require('path');
-const { fetchAppStoreReviews, fetchGooglePlayReviews } = require('./appStoreService');
+const {
+  fetchAppStoreReviews,
+  fetchGooglePlayReviews,
+  fetchAppStoreReviewsPaginated,
+  fetchGooglePlayReviewsPaginated,
+} = require('./appStoreService');
 const { analyzeReviews } = require('./analysisService');
 
 // In-memory job store (in production, use Redis or database)
@@ -30,8 +35,16 @@ function createJob(appId, storeType = 'apple', options = {}) {
     message: 'Job created',
     options: {
       country: options.country || 'us',
+      // Single-shot fallback
       limit: options.limit || 100,
-      ...options
+      // Pagination options
+      usePagination: options.usePagination !== undefined ? options.usePagination : true,
+      startPage: options.startPage || 1,
+      // Default to a high page cap; clients don't need to pass this
+      maxPages: options.maxPages ?? 100,
+      pageSize: options.pageSize || 100, // Google specific size per page
+      perPageSave: options.perPageSave !== undefined ? options.perPageSave : true,
+      ...options,
     },
     result: null,
     error: null
@@ -89,9 +102,27 @@ async function processJob(jobId) {
     
     let reviews;
     if (storeType === 'apple') {
-      reviews = await fetchAppStoreReviews(appId, options.country, options.limit);
+      if (options.usePagination) {
+        reviews = await fetchAppStoreReviewsPaginated(appId, {
+          country: options.country,
+          startPage: options.startPage,
+          maxPages: options.maxPages,
+          perPageSave: options.perPageSave,
+        });
+      } else {
+        reviews = await fetchAppStoreReviews(appId, options.country, options.limit);
+      }
     } else if (storeType === 'google') {
-      reviews = await fetchGooglePlayReviews(appId, options.country, options.limit);
+      if (options.usePagination) {
+        reviews = await fetchGooglePlayReviewsPaginated(appId, {
+          country: options.country,
+          pageSize: options.pageSize,
+          maxPages: options.maxPages,
+          perPageSave: options.perPageSave,
+        });
+      } else {
+        reviews = await fetchGooglePlayReviews(appId, options.country, options.limit);
+      }
     } else {
       throw new Error(`Unsupported store type: ${storeType}`);
     }
