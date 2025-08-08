@@ -1,10 +1,15 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { BarChart3, Home } from 'lucide-react';
 
 const Header = () => {
   return (
     <header className="bg-white shadow-sm border-b">
+      <Helmet>
+        <meta name="author" content="App Feedback Analysis" />
+        <meta name="application-name" content="App Feedback Analysis" />
+      </Helmet>
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2 text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">

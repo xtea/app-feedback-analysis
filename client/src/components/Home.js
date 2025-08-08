@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Smartphone, 
   Download, 
   Brain, 
   BarChart3, 
@@ -18,6 +17,8 @@ import {
   Award
 } from 'lucide-react';
 import axios from 'axios';
+import { Helmet } from 'react-helmet-async';
+import { FaApple, FaAndroid } from 'react-icons/fa';
 
 const Home = () => {
   const [appId, setAppId] = useState('');
@@ -179,6 +180,14 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <Helmet>
+        <title>App Feedback Analysis | Fetch and Analyze App Store Reviews with AI</title>
+        <meta name="description" content="Analyze Apple App Store and Google Play Store reviews with AI to extract features, issues, sentiment, and actionable insights." />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.origin : ''} />
+        <meta property="og:title" content="App Feedback Analysis" />
+        <meta property="og:description" content="AI-powered analysis of app store reviews for actionable insights." />
+      </Helmet>
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
@@ -274,16 +283,16 @@ const Home = () => {
                   />
                 </div>
                 <div className="mt-3 p-4 bg-gray-50 rounded-lg">
-                  <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <Smartphone className="w-4 h-4 mr-2 text-gray-400" />
-                      <span><strong>Apple:</strong> Numeric ID (e.g., 284882215)</span>
+                    <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <FaApple className="w-4 h-4 mr-2 text-gray-900" />
+                        <span><strong>Apple:</strong> Numeric ID (e.g., 284882215)</span>
+                      </div>
+                      <div className="flex items-center">
+                        <FaAndroid className="w-4 h-4 mr-2 text-green-600" />
+                        <span><strong>Google:</strong> Package name (e.g., com.facebook.katana)</span>
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      <Smartphone className="w-4 h-4 mr-2 text-gray-400" />
-                      <span><strong>Google:</strong> Package name (e.g., com.facebook.katana)</span>
-                    </div>
-                  </div>
                   {detectedStore && (
                     <div className="mt-3 text-sm">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full font-medium ${
@@ -319,8 +328,8 @@ const Home = () => {
                       disabled={isLoading}
                     />
                     <div className="flex items-center">
-                      <div className="bg-gray-900 p-2 rounded-lg mr-3">
-                        <Smartphone className="w-5 h-5 text-white" />
+                      <div className="bg-black p-2 rounded-lg mr-3">
+                        <FaApple className="w-5 h-5 text-white" />
                       </div>
                       <div>
                         <div className="font-semibold text-gray-900">Apple App Store</div>
@@ -348,7 +357,7 @@ const Home = () => {
                     />
                     <div className="flex items-center">
                       <div className="bg-green-600 p-2 rounded-lg mr-3">
-                        <Smartphone className="w-5 h-5 text-white" />
+                        <FaAndroid className="w-5 h-5 text-white" />
                       </div>
                       <div>
                         <div className="font-semibold text-gray-900">Google Play Store</div>

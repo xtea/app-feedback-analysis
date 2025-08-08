@@ -13,10 +13,9 @@ A web-based tool to collect and analyze app store feedback from Apple App Store 
 
 ## Prerequisites
 
-- Node.js (v14 or higher)
+- Node.js (v18 or higher recommended)
 - npm or yarn
 - OpenAI API key
-- Chrome/Chromium browser (for Puppeteer)
 
 ## Installation
 
@@ -43,10 +42,13 @@ A web-based tool to collect and analyze app store feedback from Apple App Store 
    cp env.example .env
    ```
    
-   Edit `.env` and add your OpenAI API key:
+   Edit `.env` and add your OpenAI API key and (optionally) model:
    ```
    OPENAI_API_KEY=your_openai_api_key_here
-   PORT=5000
+   # Optional: choose model (default: gpt-4o). Examples: gpt-4o, gpt-4-turbo, gpt-4
+   OPENAI_MODEL=gpt-4o
+   # Optional: server port (default 8888)
+   PORT=8888
    ```
 
 ## Usage
@@ -97,13 +99,14 @@ chmod +x dev-start.sh
 
 ## How to Use
 
-1. **Enter App ID**: 
-   - For Apple App Store: Use the numeric ID (e.g., `284882215` for Facebook)
-   - For Google Play Store: Use the package name (e.g., `com.facebook.katana`)
+1. **Enter App ID or URL**: 
+   - Apple: numeric ID (e.g., `284882215`) or App Store URL (e.g., `https://apps.apple.com/.../id284882215`)
+   - Google: Android package (e.g., `com.facebook.katana`) or Play Store URL (e.g., `https://play.google.com/store/apps/details?id=com.facebook.katana`)
+   - The UI auto-detects the store and normalizes the ID.
 
-2. **Select Store Type**: Choose between Apple App Store or Google Play Store
+2. **(Optional) Store Type**: The UI switches automatically based on input; you can still choose manually.
 
-3. **Start Analysis**: Click "Start Analysis" to begin the process
+3. **Start Analysis**: Click "Start Analysis". The backend triggers an async job to fetch reviews (paginated) and run AI analysis.
 
 4. **View Results**: The analysis will show:
    - Summary statistics (total reviews, average rating, sentiment distribution)
@@ -115,6 +118,13 @@ chmod +x dev-start.sh
 
 ### Job Management (Async Analysis)
 - `POST /api/jobs/analyze` - Submit analysis job (returns job ID)
+- Request body fields:
+  - `appId` (string): Apple ID, Android package, or official store URL
+  - `storeType` (string, optional): `apple` | `google` | `auto` (default: `auto`)
+  - `usePagination` (boolean, optional): default `true`
+  - `pageSize` (number, optional): Google per-page size (default `100`)
+  - `country` (string, optional): default `us`
+  - Note: Apple pagination is inherently capped by the source to 10 pages max.
 - `GET /api/jobs/status/:jobId` - Check job status and progress
 - `GET /api/jobs/result/:jobId` - Get completed analysis results
 - `GET /api/jobs/app/:appId` - Get all jobs for an app
@@ -131,13 +141,16 @@ chmod +x dev-start.sh
 
 ```
 app-feedback-analysis/
-├── server.js                 # Main Express server
-├── routes/                   # API route handlers
-│   ├── appStore.js          # App store data fetching
-│   └── analysis.js          # LLM analysis endpoints
-├── services/                 # Business logic
-│   ├── appStoreService.js   # Web scraping for reviews
-│   └── analysisService.js   # OpenAI integration
+├── server.js                      # Main Express server
+├── routes/                        # API route handlers
+│   ├── appStore.js               # App store data (direct)
+│   ├── analysis.js               # Legacy LLM analysis endpoints
+│   └── jobs.js                   # Async job submission & status APIs
+├── services/                      # Business logic
+│   ├── appStoreService.js        # Apple & Google review fetchers (paged & single-shot)
+│   ├── jobService.js             # In-memory job queue & processing
+│   ├── analysisService.js        # OpenAI integration (GPT-4 configurable)
+│   └── storeDetector.js          # Auto-detect store from raw input/URL
 ├── data/                    # Local data storage
 ├── client/                  # React frontend
 │   ├── src/
@@ -165,15 +178,15 @@ app-feedback-analysis/
 
 ## Technical Details
 
-### Web Scraping
-- Uses Puppeteer for headless browser automation
-- Handles dynamic content loading
-- Extracts review data including ratings, titles, content, and dates
+### Data Fetching
+- Apple reviews via `app-store-scraper` (paginated, up to 10 pages; ~50 reviews per page)
+- Google reviews via `google-play-scraper` with `nextPaginationToken`
+- Saves each page to `/data/{appId}_{store}_reviews_page_{n}.json` and an aggregated `/data/{appId}_{store}_reviews_all.json`
 
 ### AI Analysis
-- Uses OpenAI GPT-3.5-turbo for analysis
-- Structured prompts for consistent output
-- JSON-formatted responses for easy parsing
+- Uses OpenAI GPT models (default: GPT‑4o)
+- Configure via `OPENAI_MODEL` env var (e.g., `gpt-4o`, `gpt-4-turbo`, `gpt-4`)
+- Structured prompts return strict JSON for easy parsing
 
 ### Data Storage
 - Saves reviews and analysis results locally in JSON format
@@ -200,9 +213,9 @@ app-feedback-analysis/
 
 ### Performance Tips
 
-- Limit the number of reviews fetched (default: 100)
-- Use specific app IDs for faster results
-- Consider caching analysis results for frequently analyzed apps
+- Apple caps pages to 10; plan accordingly (≈ up to ~500 recent reviews)
+- Google supports deeper pagination via tokens; adjust `pageSize` as needed
+- Keep `OPENAI_MODEL` choice in mind for cost/latency tradeoffs
 
 ## Contributing
 
