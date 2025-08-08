@@ -164,9 +164,17 @@ const Home = () => {
         setCurrentJob(job.jobId);
         setJobStatus(job);
         console.log(`Created analysis job ${job.jobId} for app ${job.appId}`);
-        
-        // Start polling for status updates
-        // The useEffect will handle the polling
+
+        // If cache hit: job is already completed; redirect immediately
+        if (job.status === 'completed') {
+          setIsLoading(false);
+          setTimeout(() => {
+            navigate(`/analysis/${job.appId}`);
+          }, 200);
+          return;
+        }
+
+        // Otherwise, the useEffect will begin polling
       } else {
         setError('Failed to start analysis');
         setIsLoading(false);

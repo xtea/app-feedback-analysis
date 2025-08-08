@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { createJob, getJob, getJobsByAppId, JOB_STATUS } = require('../services/jobService');
+const { createJob, getJob, getJobsByAppId, JOB_STATUS, createCompletedJobFromCache } = require('../services/jobService');
+const fs = require('fs-extra');
+const path = require('path');
 const { detectStoreFromInput } = require('../services/storeDetector');
 
 // API 1: Submit analysis request
@@ -43,6 +45,29 @@ router.post('/analyze', async (req, res) => {
 
     if (!['apple', 'google'].includes(finalStoreType)) {
       return res.status(400).json({ success: false, error: 'Store type must be either "apple" or "google" (or use "auto")' });
+    }
+
+    // Cache check (24h)
+    const dataDir = path.join(__dirname, '../data');
+    const cacheFile = path.join(dataDir, `${finalAppId}_analysis.json`);
+    if (await fs.pathExists(cacheFile)) {
+      const stat = await fs.stat(cacheFile);
+      const ageMs = Date.now() - stat.mtimeMs;
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+      if (ageMs <= twentyFourHours) {
+        const cachedAnalysis = await fs.readJson(cacheFile);
+        const cachedJob = createCompletedJobFromCache(finalAppId, finalStoreType, cachedAnalysis);
+        return res.json({ success: true, data: {
+          jobId: cachedJob.id,
+          appId: cachedJob.appId,
+          storeType: cachedJob.storeType,
+          status: cachedJob.status,
+          message: cachedJob.message,
+          createdAt: cachedJob.createdAt,
+          options: cachedJob.options,
+          result: cachedJob.result,
+        }});
+      }
     }
 
     // Create and start the job

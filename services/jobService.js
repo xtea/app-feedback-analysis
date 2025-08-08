@@ -190,3 +190,47 @@ module.exports = {
   JOB_STATUS,
   cleanupOldJobs
 };
+
+// Create a completed job from cached analysis
+function createCompletedJobFromCache(appId, storeType, analysis, message = 'Cache hit: analysis served from cache') {
+  const jobId = uuidv4();
+  const job = {
+    id: jobId,
+    appId,
+    storeType,
+    status: JOB_STATUS.COMPLETED,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    progress: 100,
+    message,
+    options: {},
+    result: analysis,
+    error: null,
+  };
+  jobs.set(jobId, job);
+
+  // Persist a job result file for consistency
+  (async () => {
+    try {
+      const dataDir = path.join(__dirname, '../data');
+      await fs.ensureDir(dataDir);
+      const jobResult = {
+        jobId,
+        appId,
+        storeType,
+        reviewsCount: analysis?.summary?.totalReviews ?? 0,
+        analysis,
+        completedAt: new Date().toISOString(),
+        cache: true,
+      };
+      await fs.writeJson(path.join(dataDir, `${jobId}_job_result.json`), jobResult, { spaces: 2 });
+    } catch (e) {
+      // non-fatal
+      console.warn('Failed writing cached job result file:', e.message);
+    }
+  })();
+
+  return job;
+}
+
+module.exports.createCompletedJobFromCache = createCompletedJobFromCache;

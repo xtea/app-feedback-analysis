@@ -84,6 +84,10 @@ const Analysis = () => {
 
   const { summary, positiveAnalysis, negativeAnalysis } = analysis;
 
+  // Ensure total equals positive + negative per requirement (exclude neutral)
+  const totalPosNeg = (summary?.positiveCount || 0) + (summary?.negativeCount || 0);
+  const formatNumber = (n) => (typeof n === 'number' ? n.toLocaleString() : '0');
+
   // Prepare chart data
   const sentimentData = [
     { name: 'Positive', value: summary.positiveCount, color: '#28a745' },
@@ -147,7 +151,7 @@ const Analysis = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Reviews</p>
-                <p className="text-3xl font-bold text-gray-900">{summary.totalReviews}</p>
+                <p className="text-3xl font-bold text-gray-900">{formatNumber(totalPosNeg)}</p>
               </div>
               <div className="bg-blue-100 p-3 rounded-lg">
                 <Users className="w-6 h-6 text-blue-600" />
