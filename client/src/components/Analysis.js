@@ -16,18 +16,21 @@ import {
   ThumbsUp,
   ThumbsDown,
   Eye,
-  Download
+  Download,
+  ExternalLink
 } from 'lucide-react';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { FaApple, FaAndroid } from 'react-icons/fa';
 
 const Analysis = () => {
   const { appId } = useParams();
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [appMeta, setAppMeta] = useState({ name: null, storeUrl: null });
 
   useEffect(() => {
     fetchAnalysis();
@@ -38,6 +41,22 @@ const Analysis = () => {
       const response = await axios.get(`/api/analysis/summary/${appId}`);
       if (response.data.success) {
         setAnalysis(response.data.data);
+        // fetch app meta (name/url) after we know storeType
+        try {
+          const storeType = response.data.data.storeType;
+          let infoRes;
+          if (storeType === 'apple') {
+            infoRes = await axios.get(`/api/appstore/apple-app/${appId}?country=us`);
+          } else {
+            infoRes = await axios.get(`/api/appstore/google-app/${appId}?country=us`);
+          }
+          const info = infoRes?.data?.data || {};
+          const name = info.title || info.trackName || info.name || null;
+          const storeUrl = buildStoreUrl(storeType, appId, 'us');
+          setAppMeta({ name, storeUrl });
+        } catch (_) {
+          setAppMeta({ name: null, storeUrl: buildStoreUrl(response.data.data.storeType, appId, 'us') });
+        }
       } else {
         setError('Analysis not found');
       }
@@ -47,6 +66,13 @@ const Analysis = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const buildStoreUrl = (storeType, id, country='us') => {
+    if (storeType === 'apple') {
+      return `https://apps.apple.com/${country}/app/id${id}`;
+    }
+    return `https://play.google.com/store/apps/details?id=${id}&hl=en&gl=US`;
   };
 
   if (loading) {
@@ -258,11 +284,43 @@ const Analysis = () => {
                 <BarChart3 className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  App Analysis Dashboard
-                </h1>
+                <div className="flex items-center space-x-3">
+                  {analysis.storeType === 'apple' ? (
+                    <FaApple className="w-6 h-6 text-black" />
+                  ) : (
+                    <FaAndroid className="w-6 h-6 text-green-600" />
+                  )}
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                    {appMeta.name || 'App'}
+                  </h1>
+                  {appMeta.storeUrl && (
+                    <a
+                      href={appMeta.storeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 underline"
+                    >
+                      View on {analysis.storeType === 'apple' ? 'App Store' : 'Google Play'}
+                      <ExternalLink className="w-4 h-4 ml-1" />
+                    </a>
+                  )}
+                </div>
                 <p className="text-gray-600 mt-1">
-                  App ID: {appId} • Analyzed {new Date(analysis.timestamp).toLocaleDateString()}
+                  ID:&nbsp;
+                  {appMeta.storeUrl ? (
+                    <a
+                      href={appMeta.storeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-700 hover:text-gray-900 underline"
+                    >
+                      {appId}
+                    </a>
+                  ) : (
+                    appId
+                  )}
+                  <span className="mx-2">•</span>
+                  Analyzed {new Date(analysis.timestamp).toLocaleDateString()}
                 </p>
               </div>
             </div>

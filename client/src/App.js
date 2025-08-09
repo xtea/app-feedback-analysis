@@ -4,6 +4,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import Header from './components/Header';
 import Home from './components/Home';
 import Analysis from './components/Analysis';
+import Auth from './components/Auth';
 import './App.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
           <Header />
           <main className="container mx-auto px-4 py-8">
             <Routes>
+              <Route path="/login" element={<Auth />} />
               <Route path="/" element={<Home />} />
               <Route path="/analysis/:appId" element={<Analysis />} />
             </Routes>

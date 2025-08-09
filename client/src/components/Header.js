@@ -1,9 +1,18 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BarChart3, Home } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const Header = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/login');
+    } catch (_) {}
+  };
   return (
     <header className="bg-white shadow-sm border-b">
       <Helmet>
@@ -21,6 +30,7 @@ const Header = () => {
               <Home className="w-5 h-5" />
               <span>Home</span>
             </Link>
+            <button onClick={handleLogout} className="text-gray-600 hover:text-gray-800 transition-colors">Logout</button>
           </nav>
         </div>
       </div>
