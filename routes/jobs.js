@@ -3,6 +3,7 @@ const router = express.Router();
 const { createJob, getJob, getJobsByAppId, JOB_STATUS, createCompletedJobFromCache } = require('../services/jobService');
 const fs = require('fs-extra');
 const path = require('path');
+const db = require('../services/db');
 const { detectStoreFromInput } = require('../services/storeDetector');
 
 // API 1: Submit analysis request
@@ -48,15 +49,16 @@ router.post('/analyze', async (req, res) => {
     }
 
     // Cache check (24h)
-    const dataDir = path.join(__dirname, '../data');
-    const cacheFile = path.join(dataDir, `${finalAppId}_analysis.json`);
-    if (await fs.pathExists(cacheFile)) {
-      const stat = await fs.stat(cacheFile);
-      const ageMs = Date.now() - stat.mtimeMs;
+    const row = db.prepare('SELECT summary_json, positive_json, negative_json, store, timestamp FROM analyses WHERE app_id = ? LIMIT 1').get(finalAppId);
+    if (row) {
+      const ageMs = Date.now() - new Date(row.timestamp).getTime();
       const twentyFourHours = 24 * 60 * 60 * 1000;
       if (ageMs <= twentyFourHours) {
-        const cachedAnalysis = await fs.readJson(cacheFile);
-        const cachedJob = createCompletedJobFromCache(finalAppId, finalStoreType, cachedAnalysis);
+        const summary = JSON.parse(row.summary_json);
+        const positiveAnalysis = row.positive_json ? JSON.parse(row.positive_json) : null;
+        const negativeAnalysis = row.negative_json ? JSON.parse(row.negative_json) : null;
+        const analysis = { appId: finalAppId, storeType: row.store, summary, positiveAnalysis, negativeAnalysis, timestamp: row.timestamp };
+        const cachedJob = createCompletedJobFromCache(finalAppId, row.store, analysis);
         return res.json({ success: true, data: {
           jobId: cachedJob.id,
           appId: cachedJob.appId,

@@ -3,6 +3,7 @@ const gplayModule = require('google-play-scraper');
 const gplay = gplayModule.default || gplayModule; // Handle both CommonJS and ES module exports
 const fs = require('fs-extra');
 const path = require('path');
+const db = require('./db');
 
 // Fetch reviews from Apple App Store
 async function fetchAppStoreReviews(appId, country = 'us', limit = 100) {
@@ -28,10 +29,14 @@ async function fetchAppStoreReviews(appId, country = 'us', limit = 100) {
 
     console.log(`Successfully fetched ${transformedReviews.length} Apple App Store reviews`);
 
-    // Save to local file
-    const dataDir = path.join(__dirname, '../data');
-    await fs.ensureDir(dataDir);
-    await fs.writeJson(path.join(dataDir, `${appId}_apple_reviews.json`), transformedReviews);
+    // Persist to database
+    const insert = db.prepare(`INSERT INTO reviews (app_id, store, rating, title, content, author, date, sentiment) VALUES (?, 'apple', ?, ?, ?, ?, ?, ?)`);
+    const transaction = db.transaction((rows) => {
+      for (const r of rows) {
+        insert.run(appId, r.rating, r.title, r.content, r.author, r.date, r.sentiment);
+      }
+    });
+    transaction(transformedReviews);
     
     return transformedReviews;
   } catch (error) {
@@ -75,10 +80,14 @@ async function fetchGooglePlayReviews(appId, country = 'us', limit = 100) {
 
     console.log(`Successfully fetched ${transformedReviews.length} Google Play Store reviews`);
 
-    // Save to local file
-    const dataDir = path.join(__dirname, '../data');
-    await fs.ensureDir(dataDir);
-    await fs.writeJson(path.join(dataDir, `${appId}_google_reviews.json`), transformedReviews);
+    // Persist to database
+    const insert = db.prepare(`INSERT INTO reviews (app_id, store, rating, title, content, author, date, sentiment) VALUES (?, 'google', ?, ?, ?, ?, ?, ?)`);
+    const transaction = db.transaction((rows) => {
+      for (const r of rows) {
+        insert.run(appId, r.rating, r.title, r.content, r.author, r.date, r.sentiment);
+      }
+    });
+    transaction(transformedReviews);
     
     return transformedReviews;
   } catch (error) {

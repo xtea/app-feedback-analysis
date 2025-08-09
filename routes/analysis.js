@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { analyzeReviews } = require('../services/analysisService');
+const db = require('../services/db');
 
 // Analyze reviews using LLM
 router.post('/analyze', async (req, res) => {
@@ -32,17 +33,12 @@ router.post('/analyze', async (req, res) => {
 router.get('/summary/:appId', async (req, res) => {
   try {
     const { appId } = req.params;
-    const fs = require('fs-extra');
-    const path = require('path');
-    
-    const summaryPath = path.join(__dirname, '../data', `${appId}_analysis.json`);
-    
-    if (await fs.pathExists(summaryPath)) {
-      const summary = await fs.readJson(summaryPath);
-      res.json({ success: true, data: summary });
-    } else {
-      res.status(404).json({ error: 'Analysis not found' });
-    }
+    const row = db.prepare('SELECT summary_json, positive_json, negative_json, store, timestamp FROM analyses WHERE app_id = ? LIMIT 1').get(appId);
+    if (!row) return res.status(404).json({ error: 'Analysis not found' });
+    const summary = JSON.parse(row.summary_json);
+    const positiveAnalysis = row.positive_json ? JSON.parse(row.positive_json) : null;
+    const negativeAnalysis = row.negative_json ? JSON.parse(row.negative_json) : null;
+    res.json({ success: true, data: { appId, storeType: row.store, summary, positiveAnalysis, negativeAnalysis, timestamp: row.timestamp } });
   } catch (error) {
     console.error('Error fetching analysis summary:', error);
     res.status(500).json({ error: 'Failed to fetch analysis summary' });

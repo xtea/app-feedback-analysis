@@ -1,6 +1,7 @@
 const OpenAI = require('openai');
 const fs = require('fs-extra');
 const path = require('path');
+const db = require('./db');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -70,10 +71,24 @@ async function analyzeReviews(reviews, appId, storeType) {
       timestamp: new Date().toISOString()
     };
     
-    // Save analysis to file
-    const dataDir = path.join(__dirname, '../data');
-    await fs.ensureDir(dataDir);
-    await fs.writeJson(path.join(dataDir, `${appId}_analysis.json`), analysis, { spaces: 2 });
+    // Save analysis to database (upsert)
+    const upsert = db.prepare(`
+      INSERT INTO analyses (app_id, store, summary_json, positive_json, negative_json, timestamp)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(app_id, store) DO UPDATE SET
+        summary_json=excluded.summary_json,
+        positive_json=excluded.positive_json,
+        negative_json=excluded.negative_json,
+        timestamp=excluded.timestamp
+    `);
+    upsert.run(
+      appId,
+      storeType,
+      JSON.stringify(summary),
+      positiveAnalysis ? JSON.stringify(positiveAnalysis) : null,
+      negativeAnalysis ? JSON.stringify(negativeAnalysis) : null,
+      analysis.timestamp
+    );
     
     return analysis;
   } catch (error) {
