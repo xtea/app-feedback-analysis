@@ -144,19 +144,31 @@ module.exports = {
  * - startPage: default 1
  * - maxPages: default 5
  * - perPageSave: boolean to save each page to /data
+ * - progressCallback: function to call with progress updates
  */
 async function fetchAppStoreReviewsPaginated(appId, options = {}) {
   const country = options.country || 'us';
   const startPage = options.startPage || 1;
   const maxPages = 10;
   const perPageSave = options.perPageSave ?? true;
+  const progressCallback = options.progressCallback;
 
   const dataDir = path.join(__dirname, '../data');
   await fs.ensureDir(dataDir);
 
   const all = [];
+  let pagesFetched = 0;
+  const totalPages = maxPages;
+  
   for (let page = startPage; page < startPage + maxPages; page += 1) {
     console.log(`[APPLE PAGINATED] Fetching page ${page} for app ${appId}`);
+    
+    // Update progress before fetching each page
+    if (progressCallback) {
+      const progress = Math.floor(20 + (pagesFetched / totalPages) * 35); // 20-55% range
+      progressCallback(progress, `Fetching Apple App Store reviews (page ${pagesFetched + 1}/${totalPages})...`);
+    }
+    
     // app-store-scraper returns ~50 reviews per page
     const pageReviews = await appStoreScraper.reviews({
       id: appId,
@@ -164,10 +176,14 @@ async function fetchAppStoreReviewsPaginated(appId, options = {}) {
       sort: appStoreScraper.sort.RECENT,
       page,
     });
+    
+    pagesFetched++;
+    
     if (!Array.isArray(pageReviews) || pageReviews.length === 0) {
       console.log(`[APPLE PAGINATED] No more reviews at page ${page}`);
       break;
     }
+    
     const transformed = pageReviews.map(review => ({
       rating: review.score,
       title: review.title || '',
@@ -176,13 +192,33 @@ async function fetchAppStoreReviewsPaginated(appId, options = {}) {
       date: review.date,
       sentiment: review.score >= 4 ? 'positive' : review.score <= 2 ? 'negative' : 'neutral'
     }));
+    
     if (perPageSave) {
       await fs.writeJson(path.join(dataDir, `${appId}_apple_reviews_page_${page}.json`), transformed, { spaces: 2 });
     }
     all.push(...transformed);
+    
+    // Update progress after processing each page
+    if (progressCallback) {
+      const progress = Math.floor(20 + (pagesFetched / totalPages) * 35);
+      progressCallback(progress, `Fetched ${all.length} Apple App Store reviews so far...`);
+    }
   }
+  
   console.log(`[APPLE PAGINATED] Total accumulated reviews: ${all.length}`);
   await fs.writeJson(path.join(dataDir, `${appId}_apple_reviews_all.json`), all, { spaces: 2 });
+  
+  // Save to database  
+  if (all.length > 0) {
+    const insert = db.prepare(`INSERT INTO reviews (app_id, store, rating, title, content, author, date, sentiment) VALUES (?, 'apple', ?, ?, ?, ?, ?, ?)`);
+    const transaction = db.transaction((rows) => {
+      for (const r of rows) {
+        insert.run(appId, r.rating, r.title, r.content, r.author, r.date, r.sentiment);
+      }
+    });
+    transaction(all);
+  }
+  
   return all;
 }
 
@@ -193,21 +229,31 @@ async function fetchAppStoreReviewsPaginated(appId, options = {}) {
  * - pageSize: number of reviews per page (num). Default 100
  * - maxPages: default 5
  * - perPageSave: boolean to save each page to /data
+ * - progressCallback: function to call with progress updates
  */
 async function fetchGooglePlayReviewsPaginated(appId, options = {}) {
   const country = options.country || 'us';
   const pageSize = options.pageSize || 100;
   const maxPages = options.maxPages || 100;
   const perPageSave = options.perPageSave ?? true;
+  const progressCallback = options.progressCallback;
 
   const dataDir = path.join(__dirname, '../data');
   await fs.ensureDir(dataDir);
 
   const all = [];
   let nextPaginationToken = undefined;
+  let pagesFetched = 0;
 
   for (let page = 1; page <= maxPages; page += 1) {
     console.log(`[GOOGLE PAGINATED] Fetching page ${page} for app ${appId}`);
+    
+    // Update progress before fetching each page
+    if (progressCallback) {
+      const progress = Math.floor(20 + (pagesFetched / maxPages) * 35); // 20-55% range
+      progressCallback(progress, `Fetching Google Play reviews (page ${pagesFetched + 1}/${maxPages})...`);
+    }
+    
     const opts = {
       appId,
       country,
@@ -220,12 +266,15 @@ async function fetchGooglePlayReviewsPaginated(appId, options = {}) {
     }
 
     const response = await gplay.reviews(opts);
+    pagesFetched++;
+    
     // Response may be an object { data, nextPaginationToken }
     const pageReviews = response.data || response.reviews || response;
     if (!Array.isArray(pageReviews) || pageReviews.length === 0) {
       console.log(`[GOOGLE PAGINATED] No more reviews at page ${page}`);
       break;
     }
+    
     const transformed = pageReviews.map(review => ({
       rating: review.score,
       title: review.title || '',
@@ -234,10 +283,17 @@ async function fetchGooglePlayReviewsPaginated(appId, options = {}) {
       date: review.date,
       sentiment: review.score >= 4 ? 'positive' : review.score <= 2 ? 'negative' : 'neutral'
     }));
+    
     if (perPageSave) {
       await fs.writeJson(path.join(dataDir, `${appId}_google_reviews_page_${page}.json`), transformed, { spaces: 2 });
     }
     all.push(...transformed);
+
+    // Update progress after processing each page
+    if (progressCallback) {
+      const progress = Math.floor(20 + (pagesFetched / maxPages) * 35);
+      progressCallback(progress, `Fetched ${all.length} Google Play reviews so far...`);
+    }
 
     nextPaginationToken = response.nextPaginationToken;
     if (!nextPaginationToken) {
@@ -248,6 +304,18 @@ async function fetchGooglePlayReviewsPaginated(appId, options = {}) {
 
   console.log(`[GOOGLE PAGINATED] Total accumulated reviews: ${all.length}`);
   await fs.writeJson(path.join(dataDir, `${appId}_google_reviews_all.json`), all, { spaces: 2 });
+  
+  // Save to database
+  if (all.length > 0) {
+    const insert = db.prepare(`INSERT INTO reviews (app_id, store, rating, title, content, author, date, sentiment) VALUES (?, 'google', ?, ?, ?, ?, ?, ?)`);
+    const transaction = db.transaction((rows) => {
+      for (const r of rows) {
+        insert.run(appId, r.rating, r.title, r.content, r.author, r.date, r.sentiment);
+      }
+    });
+    transaction(all);
+  }
+  
   return all;
 }
 

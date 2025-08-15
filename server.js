@@ -6,7 +6,7 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 8888;
 const isProduction = process.env.NODE_ENV === 'production';
-const requireAuth = require('./middleware/auth');
+// const requireAuth = require('./middleware/auth');
 
 // CORS configuration - allow React dev server and production
 app.use(cors({
@@ -47,7 +47,8 @@ const jobRoutes = require('./routes/jobs');
 // Routes
 app.use('/api/appstore', appStoreRoutes);
 app.use('/api/analysis', analysisRoutes);
-app.use('/api/jobs', requireAuth, jobRoutes);
+// Public access to jobs API (no login required)
+app.use('/api/jobs', jobRoutes);
 
 // Serve React app only in production
 if (isProduction) {

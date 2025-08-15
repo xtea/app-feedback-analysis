@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { 
   ArrowLeft, 
@@ -24,6 +24,7 @@ import { Helmet } from 'react-helmet-async';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { FaApple, FaAndroid } from 'react-icons/fa';
+import { supabase } from '../lib/supabase';
 
 const Analysis = () => {
   const { appId } = useParams();
@@ -31,10 +32,26 @@ const Analysis = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [appMeta, setAppMeta] = useState({ name: null, storeUrl: null });
+  const [isAuthed, setIsAuthed] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAnalysis();
   }, [appId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Watch Supabase auth state for gating the full report
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!mounted) return;
+      setIsAuthed(!!data?.session?.user);
+    })();
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthed(!!session?.user);
+    });
+    return () => sub?.subscription?.unsubscribe?.();
+  }, []);
 
   const fetchAnalysis = async () => {
     try {
@@ -111,6 +128,10 @@ const Analysis = () => {
   }
 
   const { summary, positiveAnalysis, negativeAnalysis } = analysis;
+
+  // For unauthenticated users, show only the first positive and negative comments
+  const visiblePositiveExperiences = (isAuthed ? positiveAnalysis?.positiveExperiences : positiveAnalysis?.positiveExperiences?.slice(0, 1)) || [];
+  const visibleTopIssues = (isAuthed ? negativeAnalysis?.topIssues : negativeAnalysis?.topIssues?.slice(0, 1)) || [];
 
   // Rasterize inline SVGs (e.g., Recharts) to PNG <img> so html2canvas reliably captures charts
   const rasterizeSvgsForExport = async (container) => {
@@ -205,7 +226,7 @@ const Analysis = () => {
       const pxPerMm = canvas.width / contentWidthMm;
       const pageHeightPx = Math.floor(contentHeightMm * pxPerMm);
 
-      let currentY = 0;
+      let currentY = 0
       let pageIndex = 0;
       while (currentY < canvas.height) {
         const sliceHeightPx = Math.min(pageHeightPx, canvas.height - currentY);
@@ -325,9 +346,9 @@ const Analysis = () => {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <button className="btn-secondary flex items-center" onClick={handleExportPdf}>
+              <button className="btn-secondary flex items-center" onClick={isAuthed ? handleExportPdf : () => navigate('/login')}>
                 <Download className="w-4 h-4 mr-2" />
-                Export Report
+                {isAuthed ? 'Export Report' : 'Login to Export'}
               </button>
               <Link to="/" className="btn-primary flex items-center">
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -338,8 +359,8 @@ const Analysis = () => {
         </div>
       </div>
 
-      <div id="analysis-report" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white">
-        {/* Key Metrics Overview */}
+      <div id="analysis-report" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-xl">
+        {/* Key Metrics Overview (always visible as preview) */}
         <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-xl p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between">
@@ -400,8 +421,8 @@ const Analysis = () => {
           </div>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+        {/* Charts Section (locked when not authenticated) */}
+        <div className={(isAuthed ? '' : 'filter blur-sm md:blur pointer-events-none ') + 'grid lg:grid-cols-2 gap-8 mb-8'}>
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="flex items-center mb-6">
               <Eye className="w-6 h-6 text-blue-600 mr-3" />
@@ -451,8 +472,8 @@ const Analysis = () => {
           </div>
         </div>
 
-        {/* Side-by-Side Comparison */}
-        <div className="grid lg:grid-cols-2 gap-8">
+        {/* Side-by-Side Comparison (partially visible when not authenticated) */}
+        <div className={'grid lg:grid-cols-2 gap-8'}>
           {/* Positive Analysis */}
           {positiveAnalysis && (
             <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
@@ -473,8 +494,8 @@ const Analysis = () => {
                     <Award className="w-5 h-5 text-green-600 mr-2" />
                     <h3 className="text-lg font-bold text-gray-900">Top-Rated Features</h3>
                   </div>
-                  <div className="space-y-3">
-                    {positiveAnalysis.topFeatures?.map((feature, index) => (
+                    <div className={isAuthed ? 'space-y-3' : 'space-y-3 filter blur-[1px]'}>
+                      {positiveAnalysis.topFeatures?.slice(0, isAuthed ? undefined : 1).map((feature, index) => (
                       <div key={index} className="flex items-center p-3 bg-green-50 rounded-xl">
                         <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3">
                           {index + 1}
@@ -491,8 +512,8 @@ const Analysis = () => {
                     <Users className="w-5 h-5 text-green-600 mr-2" />
                     <h3 className="text-lg font-bold text-gray-900">Positive Experiences</h3>
                   </div>
-                  <div className="space-y-3">
-                    {positiveAnalysis.positiveExperiences?.map((experience, index) => (
+                    <div className="space-y-3">
+                      {visiblePositiveExperiences.map((experience, index) => (
                       <div key={index} className="flex items-start p-3 bg-green-50 rounded-xl">
                         <Star className="w-5 h-5 text-yellow-500 mr-3 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-800">{experience}</span>
@@ -507,8 +528,8 @@ const Analysis = () => {
                     <Shield className="w-5 h-5 text-green-600 mr-2" />
                     <h3 className="text-lg font-bold text-gray-900">Strategic Recommendations</h3>
                   </div>
-                  <div className="space-y-3">
-                    {positiveAnalysis.strengthHighlights?.map((highlight, index) => (
+                    <div className={isAuthed ? 'space-y-3' : 'space-y-3 filter blur-[1px]'}>
+                      {positiveAnalysis.strengthHighlights?.slice(0, isAuthed ? undefined : 1).map((highlight, index) => (
                       <div key={index} className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-l-4 border-green-500">
                         <p className="text-gray-800 leading-relaxed">{highlight}</p>
                       </div>
@@ -539,8 +560,8 @@ const Analysis = () => {
                     <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
                     <h3 className="text-lg font-bold text-gray-900">Most Common Issues</h3>
                   </div>
-                  <div className="space-y-3">
-                    {negativeAnalysis.topIssues?.map((issue, index) => (
+                    <div className="space-y-3">
+                      {visibleTopIssues.map((issue, index) => (
                       <div key={index} className="flex items-center p-3 bg-red-50 rounded-xl">
                         <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3">
                           {index + 1}
@@ -557,8 +578,8 @@ const Analysis = () => {
                     <Target className="w-5 h-5 text-red-600 mr-2" />
                     <h3 className="text-lg font-bold text-gray-900">Critical Problems</h3>
                   </div>
-                  <div className="space-y-3">
-                    {negativeAnalysis.criticalProblems?.map((problem, index) => (
+                    <div className={isAuthed ? 'space-y-3' : 'space-y-3 filter blur-[1px]'}>
+                      {negativeAnalysis.criticalProblems?.slice(0, isAuthed ? undefined : 1).map((problem, index) => (
                       <div key={index} className="flex items-start p-3 bg-red-50 rounded-xl">
                         <AlertCircle className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-800">{problem}</span>
@@ -573,8 +594,8 @@ const Analysis = () => {
                     <Zap className="w-5 h-5 text-red-600 mr-2" />
                     <h3 className="text-lg font-bold text-gray-900">Action Plan</h3>
                   </div>
-                  <div className="space-y-4">
-                    {negativeAnalysis.suggestedImprovements?.map((improvement, index) => (
+                    <div className={isAuthed ? 'space-y-4' : 'space-y-4 filter blur-[1px]'}>
+                      {negativeAnalysis.suggestedImprovements?.slice(0, isAuthed ? undefined : 1).map((improvement, index) => (
                       <div key={index} className="p-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl border-l-4 border-red-500">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-bold text-gray-900">{improvement.issue}</h4>
@@ -595,9 +616,23 @@ const Analysis = () => {
             </div>
           )}
         </div>
-      </div>
+        </div>
+      {!isAuthed && (
+        <div className="fixed inset-0 pointer-events-none flex items-center justify-center">
+          <div className="pointer-events-auto backdrop-blur-sm bg-white/70 border border-red-200 rounded-2xl shadow-lg p-6 max-w-md text-center">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Unlock Full Report</h3>
+            <p className="text-gray-700 mb-4">Sign in to view detailed charts and recommendations.</p>
+            <button
+              onClick={() => navigate('/login')}
+              className="inline-flex items-center px-5 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700"
+            >
+              Unblock Content
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+}
 
-export default Analysis; 
+export default Analysis;

@@ -97,8 +97,13 @@ async function processJob(jobId) {
   try {
     const { appId, storeType, options } = job;
     
-    // Step 1: Fetch reviews
-    updateJobStatus(jobId, JOB_STATUS.FETCHING_REVIEWS, 20, 'Fetching reviews from app store...');
+    // Step 1: Fetch reviews with smooth progress tracking
+    updateJobStatus(jobId, JOB_STATUS.FETCHING_REVIEWS, 10, 'Starting to fetch reviews...');
+    
+    // Create progress callback for fetch operations
+    const fetchProgressCallback = (progress, message) => {
+      updateJobStatus(jobId, JOB_STATUS.FETCHING_REVIEWS, progress, message);
+    };
     
     let reviews;
     if (storeType === 'apple') {
@@ -108,9 +113,12 @@ async function processJob(jobId) {
           startPage: options.startPage,
           maxPages: options.maxPages,
           perPageSave: options.perPageSave,
+          progressCallback: fetchProgressCallback,
         });
       } else {
+        updateJobStatus(jobId, JOB_STATUS.FETCHING_REVIEWS, 20, 'Fetching Apple App Store reviews...');
         reviews = await fetchAppStoreReviews(appId, options.country, options.limit);
+        updateJobStatus(jobId, JOB_STATUS.FETCHING_REVIEWS, 50, 'Fetched Apple App Store reviews');
       }
     } else if (storeType === 'google') {
       if (options.usePagination) {
@@ -119,25 +127,33 @@ async function processJob(jobId) {
           pageSize: options.pageSize,
           maxPages: options.maxPages,
           perPageSave: options.perPageSave,
+          progressCallback: fetchProgressCallback,
         });
       } else {
+        updateJobStatus(jobId, JOB_STATUS.FETCHING_REVIEWS, 20, 'Fetching Google Play reviews...');
         reviews = await fetchGooglePlayReviews(appId, options.country, options.limit);
+        updateJobStatus(jobId, JOB_STATUS.FETCHING_REVIEWS, 50, 'Fetched Google Play reviews');
       }
     } else {
       throw new Error(`Unsupported store type: ${storeType}`);
     }
     
-    updateJobStatus(jobId, JOB_STATUS.FETCHING_REVIEWS, 50, `Fetched ${reviews.length} reviews`);
+    updateJobStatus(jobId, JOB_STATUS.FETCHING_REVIEWS, 55, `Successfully fetched ${reviews.length} reviews`);
     
     // Check if we have reviews to analyze
     if (reviews.length === 0) {
       throw new Error(`No reviews found for app ${appId} in ${storeType} store. The app might not exist, have no reviews, or the ID might be incorrect.`);
     }
     
-    // Step 2: Analyze reviews
-    updateJobStatus(jobId, JOB_STATUS.ANALYZING, 60, 'Analyzing reviews with AI...');
+    // Step 2: Analyze reviews with progress tracking
+    updateJobStatus(jobId, JOB_STATUS.ANALYZING, 60, 'Starting AI analysis...');
     
-    const analysis = await analyzeReviews(reviews, appId, storeType);
+    // Create progress callback for granular updates during analysis
+    const progressCallback = (progress, message) => {
+      updateJobStatus(jobId, JOB_STATUS.ANALYZING, progress, message);
+    };
+    
+    const analysis = await analyzeReviews(reviews, appId, storeType, progressCallback);
     
     updateJobStatus(jobId, JOB_STATUS.ANALYZING, 90, 'Analysis completed, saving results...');
     
