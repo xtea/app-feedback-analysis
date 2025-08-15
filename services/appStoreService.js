@@ -193,9 +193,7 @@ async function fetchAppStoreReviewsPaginated(appId, options = {}) {
       sentiment: review.score >= 4 ? 'positive' : review.score <= 2 ? 'negative' : 'neutral'
     }));
     
-    if (perPageSave) {
-      await fs.writeJson(path.join(dataDir, `${appId}_apple_reviews_page_${page}.json`), transformed, { spaces: 2 });
-    }
+    // Removed JSON file storage - using SQLite database only
     all.push(...transformed);
     
     // Update progress after processing each page
@@ -206,7 +204,7 @@ async function fetchAppStoreReviewsPaginated(appId, options = {}) {
   }
   
   console.log(`[APPLE PAGINATED] Total accumulated reviews: ${all.length}`);
-  await fs.writeJson(path.join(dataDir, `${appId}_apple_reviews_all.json`), all, { spaces: 2 });
+  // Removed JSON file storage - using SQLite database only
   
   // Save to database  
   if (all.length > 0) {
@@ -284,9 +282,7 @@ async function fetchGooglePlayReviewsPaginated(appId, options = {}) {
       sentiment: review.score >= 4 ? 'positive' : review.score <= 2 ? 'negative' : 'neutral'
     }));
     
-    if (perPageSave) {
-      await fs.writeJson(path.join(dataDir, `${appId}_google_reviews_page_${page}.json`), transformed, { spaces: 2 });
-    }
+    // Removed JSON file storage - using SQLite database only
     all.push(...transformed);
 
     // Update progress after processing each page
@@ -303,7 +299,7 @@ async function fetchGooglePlayReviewsPaginated(appId, options = {}) {
   }
 
   console.log(`[GOOGLE PAGINATED] Total accumulated reviews: ${all.length}`);
-  await fs.writeJson(path.join(dataDir, `${appId}_google_reviews_all.json`), all, { spaces: 2 });
+  // Removed JSON file storage - using SQLite database only
   
   // Save to database
   if (all.length > 0) {
