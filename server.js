@@ -10,7 +10,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // CORS configuration - allow React dev server and production
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // React dev server
+  origin: ['*'], // React dev server
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -34,11 +34,6 @@ app.use((req, res, next) => {
   }
 });
 
-// Serve React app only in production
-if (isProduction) {
-  app.use(express.static(path.join(__dirname, 'client/build')));
-}
-
 // Import routes
 const appStoreRoutes = require('./routes/appStore');
 const analysisRoutes = require('./routes/analysis');
@@ -50,12 +45,6 @@ app.use('/api/analysis', analysisRoutes);
 // Public access to jobs API (no login required)
 app.use('/api/jobs', jobRoutes);
 
-// Serve React app only in production
-if (isProduction) {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-  });
-}
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
