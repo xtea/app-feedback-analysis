@@ -435,14 +435,14 @@ const Home = () => {
                       <p className="text-blue-700 text-sm">{jobStatus.message}</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600">{jobStatus.progress}%</div>
+                      <div className="text-2xl font-bold text-blue-600">{typeof jobStatus.progress === 'number' ? Math.max(1, jobStatus.progress) : 1}%</div>
                       <div className="text-xs text-blue-500">Complete</div>
                     </div>
                   </div>
                   <div className="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
                     <div
                       className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500 ease-out"
-                      style={{ width: `${jobStatus.progress}%` }}
+                      style={{ width: `${typeof jobStatus.progress === 'number' ? Math.max(1, Math.min(100, jobStatus.progress)) : 1}%` }}
                     ></div>
                   </div>
                 </div>
