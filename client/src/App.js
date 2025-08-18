@@ -13,7 +13,7 @@ function App() {
       <Router>
         <div className="App min-h-screen bg-gray-50">
           <Header />
-          <main className="container mx-auto px-4 py-8">
+          <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
             <Routes>
               <Route path="/login" element={<Auth />} />
               <Route path="/" element={<Home />} />

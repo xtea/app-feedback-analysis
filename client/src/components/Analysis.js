@@ -298,35 +298,37 @@ const Analysis = () => {
       </Helmet>
       {/* Header Section */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl">
-                <BarChart3 className="w-8 h-8 text-white" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 sm:p-3 rounded-xl">
+                <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
-              <div>
-                <div className="flex items-center space-x-3">
-                  {analysis.storeType === 'apple' ? (
-                    <FaApple className="w-6 h-6 text-black" />
-                  ) : (
-                    <FaAndroid className="w-6 h-6 text-green-600" />
-                  )}
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                    {appMeta.name || 'App'}
-                  </h1>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    {analysis.storeType === 'apple' ? (
+                      <FaApple className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
+                    ) : (
+                      <FaAndroid className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                    )}
+                    <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 truncate">
+                      {appMeta.name || 'App'}
+                    </h1>
+                  </div>
                   {appMeta.storeUrl && (
                     <a
                       href={appMeta.storeUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 underline"
+                      className="inline-flex items-center text-xs sm:text-sm text-blue-600 hover:text-blue-800 underline mt-1 sm:mt-0"
                     >
                       View on {analysis.storeType === 'apple' ? 'App Store' : 'Google Play'}
-                      <ExternalLink className="w-4 h-4 ml-1" />
+                      <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                     </a>
                   )}
                 </div>
-                <p className="text-gray-600 mt-1">
+                <p className="text-gray-600 mt-1 text-xs sm:text-sm">
                   ID:&nbsp;
                   {appMeta.storeUrl ? (
                     <a
@@ -345,14 +347,16 @@ const Analysis = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <button className="btn-secondary flex items-center" onClick={isAuthed ? handleExportPdf : () => navigate('/login')}>
-                <Download className="w-4 h-4 mr-2" />
-                {isAuthed ? 'Export Report' : 'Login to Export'}
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <button className="btn-secondary flex items-center text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2" onClick={isAuthed ? handleExportPdf : () => navigate('/login')}>
+                <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">{isAuthed ? 'Export Report' : 'Login to Export'}</span>
+                <span className="xs:hidden">Export</span>
               </button>
-              <Link to="/" className="btn-primary flex items-center">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                New Analysis
+              <Link to="/" className="btn-primary flex items-center text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2">
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">New Analysis</span>
+                <span className="xs:hidden">New</span>
               </Link>
             </div>
           </div>
@@ -361,74 +365,74 @@ const Analysis = () => {
 
       <div id="analysis-report" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white rounded-xl">
         {/* Key Metrics Overview (always visible as preview) */}
-        <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-xl p-6 border-l-4 border-blue-500">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Reviews</p>
-                <p className="text-3xl font-bold text-gray-900">{formatNumber(totalPosNeg)}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Reviews</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">{formatNumber(totalPosNeg)}</p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="bg-blue-100 p-2 sm:p-3 rounded-lg">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl p-6 border-l-4 border-yellow-500">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-l-4 border-yellow-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Average Rating</p>
-                <p className="text-3xl font-bold text-gray-900">{summary.averageRating.toFixed(1)}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Average Rating</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900">{summary.averageRating.toFixed(1)}</p>
                 <div className="flex items-center mt-1">
                   {[...Array(5)].map((_, i) => (
                     <Star 
                       key={i} 
-                      className={`w-4 h-4 ${i < Math.floor(summary.averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                      className={`w-3 h-3 sm:w-4 sm:h-4 ${i < Math.floor(summary.averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
                     />
                   ))}
                 </div>
               </div>
-              <div className="bg-yellow-100 p-3 rounded-lg">
-                <Star className="w-6 h-6 text-yellow-600" />
+              <div className="bg-yellow-100 p-2 sm:p-3 rounded-lg">
+                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl p-6 border-l-4 border-green-500">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-l-4 border-green-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Positive Sentiment</p>
-                <p className="text-3xl font-bold text-green-600">{summary.positivePercentage.toFixed(1)}%</p>
-                <p className="text-sm text-gray-500">{summary.positiveCount} reviews</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Positive Sentiment</p>
+                <p className="text-2xl sm:text-3xl font-bold text-green-600">{summary.positivePercentage.toFixed(1)}%</p>
+                <p className="text-xs sm:text-sm text-gray-500">{summary.positiveCount} reviews</p>
               </div>
-              <div className="bg-green-100 p-3 rounded-lg">
-                <ThumbsUp className="w-6 h-6 text-green-600" />
+              <div className="bg-green-100 p-2 sm:p-3 rounded-lg">
+                <ThumbsUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl p-6 border-l-4 border-red-500">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-l-4 border-red-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Negative Sentiment</p>
-                <p className="text-3xl font-bold text-red-600">{summary.negativePercentage.toFixed(1)}%</p>
-                <p className="text-sm text-gray-500">{summary.negativeCount} reviews</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Negative Sentiment</p>
+                <p className="text-2xl sm:text-3xl font-bold text-red-600">{summary.negativePercentage.toFixed(1)}%</p>
+                <p className="text-xs sm:text-sm text-gray-500">{summary.negativeCount} reviews</p>
               </div>
-              <div className="bg-red-100 p-3 rounded-lg">
-                <ThumbsDown className="w-6 h-6 text-red-600" />
+              <div className="bg-red-100 p-2 sm:p-3 rounded-lg">
+                <ThumbsDown className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Charts Section (locked when not authenticated) */}
-        <div className={(isAuthed ? '' : 'filter blur-sm md:blur pointer-events-none ') + 'grid lg:grid-cols-2 gap-8 mb-8'}>
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="flex items-center mb-6">
-              <Eye className="w-6 h-6 text-blue-600 mr-3" />
-              <h3 className="text-xl font-bold text-gray-900">Sentiment Distribution</h3>
+        <div className={(isAuthed ? '' : 'filter blur-sm md:blur pointer-events-none ') + 'grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8'}>
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8">
+            <div className="flex items-center mb-4 sm:mb-6">
+              <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 mr-2 sm:mr-3" />
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900">Sentiment Distribution</h3>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={sentimentData}
@@ -436,7 +440,7 @@ const Analysis = () => {
                   cy="50%"
                   labelLine={false}
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
+                  outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -449,12 +453,12 @@ const Analysis = () => {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="flex items-center mb-6">
-              <BarChart3 className="w-6 h-6 text-purple-600 mr-3" />
-              <h3 className="text-xl font-bold text-gray-900">Rating Distribution</h3>
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8">
+            <div className="flex items-center mb-4 sm:mb-6">
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 mr-2 sm:mr-3" />
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900">Rating Distribution</h3>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={250}>
               <BarChart data={ratingData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="rating" />
@@ -473,34 +477,34 @@ const Analysis = () => {
         </div>
 
         {/* Side-by-Side Comparison (partially visible when not authenticated) */}
-        <div className={'grid lg:grid-cols-2 gap-8'}>
+        <div className={'grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8'}>
           {/* Positive Analysis */}
           {positiveAnalysis && (
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-8 py-6">
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
                 <div className="flex items-center">
-                  <TrendingUp className="w-8 h-8 text-white mr-4" />
+                  <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white mr-3 sm:mr-4" />
                   <div>
-                    <h2 className="text-2xl font-bold text-white">Strengths & Positives</h2>
-                    <p className="text-green-100">What users love about your app</p>
+                    <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Strengths & Positives</h2>
+                    <p className="text-green-100 text-sm sm:text-base">What users love about your app</p>
                   </div>
                 </div>
               </div>
               
-              <div className="p-8 space-y-8">
+              <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
                 {/* Top Features */}
                 <div>
-                  <div className="flex items-center mb-4">
-                    <Award className="w-5 h-5 text-green-600 mr-2" />
-                    <h3 className="text-lg font-bold text-gray-900">Top-Rated Features</h3>
+                  <div className="flex items-center mb-3 sm:mb-4">
+                    <Award className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2" />
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900">Top-Rated Features</h3>
                   </div>
-                    <div className={isAuthed ? 'space-y-3' : 'space-y-3 filter blur-[1px]'}>
+                    <div className={isAuthed ? 'space-y-2 sm:space-y-3' : 'space-y-2 sm:space-y-3 filter blur-[1px]'}>
                       {positiveAnalysis.topFeatures?.slice(0, isAuthed ? undefined : 1).map((feature, index) => (
-                      <div key={index} className="flex items-center p-3 bg-green-50 rounded-xl">
-                        <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3">
+                      <div key={index} className="flex items-center p-2 sm:p-3 bg-green-50 rounded-lg sm:rounded-xl">
+                        <div className="bg-green-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs sm:text-sm font-bold mr-2 sm:mr-3">
                           {index + 1}
                         </div>
-                        <span className="text-gray-800 font-medium">{feature}</span>
+                        <span className="text-gray-800 font-medium text-sm sm:text-base">{feature}</span>
                       </div>
                     ))}
                   </div>
@@ -508,15 +512,15 @@ const Analysis = () => {
 
                 {/* User Experiences */}
                 <div>
-                  <div className="flex items-center mb-4">
-                    <Users className="w-5 h-5 text-green-600 mr-2" />
-                    <h3 className="text-lg font-bold text-gray-900">Positive Experiences</h3>
+                  <div className="flex items-center mb-3 sm:mb-4">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2" />
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900">Positive Experiences</h3>
                   </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       {visiblePositiveExperiences.map((experience, index) => (
-                      <div key={index} className="flex items-start p-3 bg-green-50 rounded-xl">
-                        <Star className="w-5 h-5 text-yellow-500 mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-800">{experience}</span>
+                      <div key={index} className="flex items-start p-2 sm:p-3 bg-green-50 rounded-lg sm:rounded-xl">
+                        <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-800 text-sm sm:text-base">{experience}</span>
                       </div>
                     ))}
                   </div>
@@ -524,14 +528,14 @@ const Analysis = () => {
 
                 {/* Strength Highlights */}
                 <div>
-                  <div className="flex items-center mb-4">
-                    <Shield className="w-5 h-5 text-green-600 mr-2" />
-                    <h3 className="text-lg font-bold text-gray-900">Strategic Recommendations</h3>
+                  <div className="flex items-center mb-3 sm:mb-4">
+                    <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2" />
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900">Strategic Recommendations</h3>
                   </div>
-                    <div className={isAuthed ? 'space-y-3' : 'space-y-3 filter blur-[1px]'}>
+                    <div className={isAuthed ? 'space-y-2 sm:space-y-3' : 'space-y-2 sm:space-y-3 filter blur-[1px]'}>
                       {positiveAnalysis.strengthHighlights?.slice(0, isAuthed ? undefined : 1).map((highlight, index) => (
-                      <div key={index} className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-l-4 border-green-500">
-                        <p className="text-gray-800 leading-relaxed">{highlight}</p>
+                      <div key={index} className="p-3 sm:p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg sm:rounded-xl border-l-4 border-green-500">
+                        <p className="text-gray-800 leading-relaxed text-sm sm:text-base">{highlight}</p>
                       </div>
                     ))}
                   </div>
@@ -542,31 +546,31 @@ const Analysis = () => {
 
           {/* Negative Analysis */}
           {negativeAnalysis && (
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-              <div className="bg-gradient-to-r from-red-500 to-pink-600 px-8 py-6">
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-red-500 to-pink-600 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
                 <div className="flex items-center">
-                  <TrendingDown className="w-8 h-8 text-white mr-4" />
+                  <TrendingDown className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white mr-3 sm:mr-4" />
                   <div>
-                    <h2 className="text-2xl font-bold text-white">Issues & Improvements</h2>
-                    <p className="text-red-100">Areas that need attention</p>
+                    <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Issues & Improvements</h2>
+                    <p className="text-red-100 text-sm sm:text-base">Areas that need attention</p>
                   </div>
                 </div>
               </div>
               
-              <div className="p-8 space-y-8">
+              <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
                 {/* Top Issues */}
                 <div>
-                  <div className="flex items-center mb-4">
-                    <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
-                    <h3 className="text-lg font-bold text-gray-900">Most Common Issues</h3>
+                  <div className="flex items-center mb-3 sm:mb-4">
+                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 mr-2" />
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900">Most Common Issues</h3>
                   </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       {visibleTopIssues.map((issue, index) => (
-                      <div key={index} className="flex items-center p-3 bg-red-50 rounded-xl">
-                        <div className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3">
+                      <div key={index} className="flex items-center p-2 sm:p-3 bg-red-50 rounded-lg sm:rounded-xl">
+                        <div className="bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs sm:text-sm font-bold mr-2 sm:mr-3">
                           {index + 1}
                         </div>
-                        <span className="text-gray-800 font-medium">{issue}</span>
+                        <span className="text-gray-800 font-medium text-sm sm:text-base">{issue}</span>
                       </div>
                     ))}
                   </div>
@@ -574,15 +578,15 @@ const Analysis = () => {
 
                 {/* Critical Problems */}
                 <div>
-                  <div className="flex items-center mb-4">
-                    <Target className="w-5 h-5 text-red-600 mr-2" />
-                    <h3 className="text-lg font-bold text-gray-900">Critical Problems</h3>
+                  <div className="flex items-center mb-3 sm:mb-4">
+                    <Target className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 mr-2" />
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900">Critical Problems</h3>
                   </div>
-                    <div className={isAuthed ? 'space-y-3' : 'space-y-3 filter blur-[1px]'}>
+                    <div className={isAuthed ? 'space-y-2 sm:space-y-3' : 'space-y-2 sm:space-y-3 filter blur-[1px]'}>
                       {negativeAnalysis.criticalProblems?.slice(0, isAuthed ? undefined : 1).map((problem, index) => (
-                      <div key={index} className="flex items-start p-3 bg-red-50 rounded-xl">
-                        <AlertCircle className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-800">{problem}</span>
+                      <div key={index} className="flex items-start p-2 sm:p-3 bg-red-50 rounded-lg sm:rounded-xl">
+                        <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-800 text-sm sm:text-base">{problem}</span>
                       </div>
                     ))}
                   </div>
@@ -590,16 +594,16 @@ const Analysis = () => {
 
                 {/* Suggested Improvements */}
                 <div>
-                  <div className="flex items-center mb-4">
-                    <Zap className="w-5 h-5 text-red-600 mr-2" />
-                    <h3 className="text-lg font-bold text-gray-900">Action Plan</h3>
+                  <div className="flex items-center mb-3 sm:mb-4">
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 mr-2" />
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900">Action Plan</h3>
                   </div>
-                    <div className={isAuthed ? 'space-y-4' : 'space-y-4 filter blur-[1px]'}>
+                    <div className={isAuthed ? 'space-y-3 sm:space-y-4' : 'space-y-3 sm:space-y-4 filter blur-[1px]'}>
                       {negativeAnalysis.suggestedImprovements?.slice(0, isAuthed ? undefined : 1).map((improvement, index) => (
-                      <div key={index} className="p-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-xl border-l-4 border-red-500">
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="font-bold text-gray-900">{improvement.issue}</h4>
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      <div key={index} className="p-3 sm:p-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg sm:rounded-xl border-l-4 border-red-500">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-3">
+                          <h4 className="font-bold text-gray-900 text-sm sm:text-base mb-1 sm:mb-0">{improvement.issue}</h4>
+                          <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold inline-block ${
                             improvement.priority === 'High' ? 'bg-red-100 text-red-800' :
                             improvement.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-blue-100 text-blue-800'
@@ -607,7 +611,7 @@ const Analysis = () => {
                             {improvement.priority} Priority
                           </span>
                         </div>
-                        <p className="text-gray-700 leading-relaxed">{improvement.improvement}</p>
+                        <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{improvement.improvement}</p>
                       </div>
                     ))}
                   </div>
@@ -618,13 +622,13 @@ const Analysis = () => {
         </div>
         </div>
       {!isAuthed && (
-        <div className="fixed inset-0 pointer-events-none flex items-center justify-center">
-          <div className="pointer-events-auto backdrop-blur-sm bg-white/70 border border-red-200 rounded-2xl shadow-lg p-6 max-w-md text-center">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Unlock Full Report</h3>
-            <p className="text-gray-700 mb-4">Sign in to view detailed charts and recommendations.</p>
+        <div className="fixed inset-0 pointer-events-none flex items-center justify-center p-4">
+          <div className="pointer-events-auto backdrop-blur-sm bg-white/70 border border-red-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 max-w-sm sm:max-w-md text-center">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Unlock Full Report</h3>
+            <p className="text-sm sm:text-base text-gray-700 mb-4">Sign in to view detailed charts and recommendations.</p>
             <button
               onClick={() => navigate('/login')}
-              className="inline-flex items-center px-5 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700"
+              className="inline-flex items-center px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm sm:text-base"
             >
               Unblock Content
             </button>

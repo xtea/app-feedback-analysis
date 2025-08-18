@@ -218,17 +218,17 @@ const Home = () => {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-16 pb-12 sm:pb-16 lg:pb-24">
           <div className="text-center">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium mb-6">
-              <Zap className="w-4 h-4 mr-2" />
+            <div className="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
               AI-Powered Analysis
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight px-2">
               Transform App Reviews Into
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Actionable Insights</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-4">
               Leverage advanced AI to analyze thousands of app store reviews instantly. Understand what users love and what needs improvement with comprehensive sentiment analysis.
             </p>
           </div>
@@ -236,46 +236,46 @@ const Home = () => {
       </div>
 
       {/* Features Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 mb-16">
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
-              <Download className="w-8 h-8 text-white" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8 lg:-mt-12 mb-8 sm:mb-12 lg:mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+              <Download className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Smart Data Collection</h3>
-            <p className="text-gray-600 leading-relaxed">Automatically fetch and organize reviews from Apple App Store and Google Play Store with intelligent filtering.</p>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Smart Data Collection</h3>
+            <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Automatically fetch and organize reviews from Apple App Store and Google Play Store with intelligent filtering.</p>
           </div>
           
-          <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
-              <Brain className="w-8 h-8 text-white" />
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+              <Brain className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">AI-Powered Analysis</h3>
-            <p className="text-gray-600 leading-relaxed">Advanced natural language processing identifies patterns, sentiment, and key themes in user feedback.</p>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">AI-Powered Analysis</h3>
+            <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Advanced natural language processing identifies patterns, sentiment, and key themes in user feedback.</p>
           </div>
           
-          <div className="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
-              <BarChart3 className="w-8 h-8 text-white" />
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 lg:p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="bg-gradient-to-r from-purple-500 to-purple-600 w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-lg sm:rounded-xl flex items-center justify-center mb-4 sm:mb-6">
+              <BarChart3 className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Actionable Reports</h3>
-            <p className="text-gray-600 leading-relaxed">Get detailed insights with prioritized recommendations and competitive analysis metrics.</p>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Actionable Reports</h3>
+            <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Get detailed insights with prioritized recommendations and competitive analysis metrics.</p>
           </div>
         </div>
       </div>
 
       {/* Analysis Form */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-8 py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12 lg:mb-16">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden">
+          <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
             <div className="flex items-center">
-              <Search className="w-6 h-6 text-white mr-3" />
-              <h2 className="text-2xl font-bold text-white">Start Your Analysis</h2>
+              <Search className="w-5 h-5 sm:w-6 sm:h-6 text-white mr-2 sm:mr-3" />
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Start Your Analysis</h2>
             </div>
           </div>
           
-          <div className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
               <div>
                 <label htmlFor="appId" className="block text-sm font-semibold text-gray-900 mb-3">
                   App Identifier
@@ -309,14 +309,14 @@ const Home = () => {
                     disabled={isLoading}
                   />
                 </div>
-                <div className="mt-3 p-4 bg-gray-50 rounded-lg">
-                    <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+                <div className="mt-3 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                       <div className="flex items-center">
-                        <FaApple className="w-4 h-4 mr-2 text-gray-900" />
+                        <FaApple className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-gray-900" />
                         <span><strong>Apple:</strong> Numeric ID (e.g., 284882215)</span>
                       </div>
                       <div className="flex items-center">
-                        <FaAndroid className="w-4 h-4 mr-2 text-green-600" />
+                        <FaAndroid className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-green-600" />
                         <span><strong>Google:</strong> Package name (e.g., com.facebook.katana)</span>
                       </div>
                     </div>
@@ -336,11 +336,11 @@ const Home = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-4">
+                <label className="block text-sm font-semibold text-gray-900 mb-3 sm:mb-4">
                   Platform Selection
                 </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <label className={`relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <label className={`relative flex items-center p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 ${
                     storeType === 'apple' 
                       ? 'border-blue-500 bg-blue-50' 
                       : 'border-gray-200 hover:border-gray-300'
@@ -354,21 +354,21 @@ const Home = () => {
                       className="sr-only"
                       disabled={isLoading}
                     />
-                    <div className="flex items-center">
-                      <div className="bg-black p-2 rounded-lg mr-3">
-                        <FaApple className="w-5 h-5 text-white" />
+                    <div className="flex items-center flex-1">
+                      <div className="bg-black p-1.5 sm:p-2 rounded-lg mr-2 sm:mr-3">
+                        <FaApple className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       </div>
-                      <div>
-                        <div className="font-semibold text-gray-900">Apple App Store</div>
-                        <div className="text-sm text-gray-500">iOS applications</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-gray-900 text-sm sm:text-base">Apple App Store</div>
+                        <div className="text-xs sm:text-sm text-gray-500">iOS applications</div>
                       </div>
                     </div>
                     {storeType === 'apple' && (
-                      <CheckCircle className="w-5 h-5 text-blue-500 ml-auto" />
+                      <CheckCircle className="w-5 h-5 text-blue-500 ml-2" />
                     )}
                   </label>
                   
-                  <label className={`relative flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
+                  <label className={`relative flex items-center p-3 sm:p-4 border-2 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 ${
                     storeType === 'google' 
                       ? 'border-green-500 bg-green-50' 
                       : 'border-gray-200 hover:border-gray-300'
@@ -382,17 +382,17 @@ const Home = () => {
                       className="sr-only"
                       disabled={isLoading}
                     />
-                    <div className="flex items-center">
-                      <div className="bg-green-600 p-2 rounded-lg mr-3">
-                        <FaAndroid className="w-5 h-5 text-white" />
+                    <div className="flex items-center flex-1">
+                      <div className="bg-green-600 p-1.5 sm:p-2 rounded-lg mr-2 sm:mr-3">
+                        <FaAndroid className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       </div>
-                      <div>
-                        <div className="font-semibold text-gray-900">Google Play Store</div>
-                        <div className="text-sm text-gray-500">Android applications</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-gray-900 text-sm sm:text-base">Google Play Store</div>
+                        <div className="text-xs sm:text-sm text-gray-500">Android applications</div>
                       </div>
                     </div>
                     {storeType === 'google' && (
-                      <CheckCircle className="w-5 h-5 text-green-500 ml-auto" />
+                      <CheckCircle className="w-5 h-5 text-green-500 ml-2" />
                     )}
                   </label>
                 </div>
@@ -451,7 +451,7 @@ const Home = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-200 transform hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg sm:rounded-xl text-base sm:text-lg transition-all duration-200 transform hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
@@ -473,54 +473,54 @@ const Home = () => {
       </div>
 
       {/* Enhanced Results Preview */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Comprehensive Analysis Results</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12 lg:mb-16">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-4">Comprehensive Analysis Results</h2>
+          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             Get detailed insights that drive product decisions and improve user satisfaction
           </p>
         </div>
         
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Positive Insights Card */}
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-8 py-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
               <div className="flex items-center">
-                <TrendingUp className="w-8 h-8 text-white mr-4" />
+                <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white mr-3 sm:mr-4" />
                 <div>
-                  <h3 className="text-2xl font-bold text-white">Positive Insights</h3>
-                  <p className="text-green-100">What users love about your app</p>
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Positive Insights</h3>
+                  <p className="text-green-100 text-sm sm:text-base">What users love about your app</p>
                 </div>
               </div>
             </div>
-            <div className="p-8">
-              <div className="space-y-6">
+            <div className="p-4 sm:p-6 lg:p-8">
+              <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-start">
-                  <Star className="w-6 h-6 text-yellow-500 mr-3 mt-1 flex-shrink-0" />
+                  <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 mr-2 sm:mr-3 mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Top-Rated Features</h4>
-                    <p className="text-gray-600">Identify the most beloved functionalities and experiences</p>
+                    <h4 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Top-Rated Features</h4>
+                    <p className="text-gray-600 text-xs sm:text-sm">Identify the most beloved functionalities and experiences</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <Users className="w-6 h-6 text-blue-500 mr-3 mt-1 flex-shrink-0" />
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500 mr-2 sm:mr-3 mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">User Experience Highlights</h4>
-                    <p className="text-gray-600">Discover positive user journeys and satisfaction drivers</p>
+                    <h4 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">User Experience Highlights</h4>
+                    <p className="text-gray-600 text-xs sm:text-sm">Discover positive user journeys and satisfaction drivers</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <Award className="w-6 h-6 text-purple-500 mr-3 mt-1 flex-shrink-0" />
+                  <Award className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 mr-2 sm:mr-3 mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Competitive Advantages</h4>
-                    <p className="text-gray-600">Understand what makes your app stand out from competitors</p>
+                    <h4 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Competitive Advantages</h4>
+                    <p className="text-gray-600 text-xs sm:text-sm">Understand what makes your app stand out from competitors</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <Shield className="w-6 h-6 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 mr-2 sm:mr-3 mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Strength Amplification</h4>
-                    <p className="text-gray-600">Strategic recommendations to leverage your strengths</p>
+                    <h4 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Strength Amplification</h4>
+                    <p className="text-gray-600 text-xs sm:text-sm">Strategic recommendations to leverage your strengths</p>
                   </div>
                 </div>
               </div>
@@ -528,44 +528,44 @@ const Home = () => {
           </div>
 
           {/* Negative Insights Card */}
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
-            <div className="bg-gradient-to-r from-red-500 to-pink-600 px-8 py-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
+            <div className="bg-gradient-to-r from-red-500 to-pink-600 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
               <div className="flex items-center">
-                <TrendingDown className="w-8 h-8 text-white mr-4" />
+                <TrendingDown className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white mr-3 sm:mr-4" />
                 <div>
-                  <h3 className="text-2xl font-bold text-white">Improvement Opportunities</h3>
-                  <p className="text-red-100">Areas for enhancement and growth</p>
+                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Improvement Opportunities</h3>
+                  <p className="text-red-100 text-sm sm:text-base">Areas for enhancement and growth</p>
                 </div>
               </div>
             </div>
-            <div className="p-8">
-              <div className="space-y-6">
+            <div className="p-4 sm:p-6 lg:p-8">
+              <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-start">
-                  <AlertCircle className="w-6 h-6 text-red-500 mr-3 mt-1 flex-shrink-0" />
+                  <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-500 mr-2 sm:mr-3 mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Critical Issues</h4>
-                    <p className="text-gray-600">High-priority problems requiring immediate attention</p>
+                    <h4 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Critical Issues</h4>
+                    <p className="text-gray-600 text-xs sm:text-sm">High-priority problems requiring immediate attention</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <BarChart3 className="w-6 h-6 text-orange-500 mr-3 mt-1 flex-shrink-0" />
+                  <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 mr-2 sm:mr-3 mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Common Pain Points</h4>
-                    <p className="text-gray-600">Frequently mentioned issues across user reviews</p>
+                    <h4 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Common Pain Points</h4>
+                    <p className="text-gray-600 text-xs sm:text-sm">Frequently mentioned issues across user reviews</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <Zap className="w-6 h-6 text-blue-500 mr-3 mt-1 flex-shrink-0" />
+                  <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500 mr-2 sm:mr-3 mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Actionable Solutions</h4>
-                    <p className="text-gray-600">Specific improvement recommendations with priority levels</p>
+                    <h4 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Actionable Solutions</h4>
+                    <p className="text-gray-600 text-xs sm:text-sm">Specific improvement recommendations with priority levels</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <CheckCircle className="w-6 h-6 text-green-500 mr-3 mt-1 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 mr-2 sm:mr-3 mt-1 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Implementation Roadmap</h4>
-                    <p className="text-gray-600">Prioritized action plan for maximum impact</p>
+                    <h4 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Implementation Roadmap</h4>
+                    <p className="text-gray-600 text-xs sm:text-sm">Prioritized action plan for maximum impact</p>
                   </div>
                 </div>
               </div>
