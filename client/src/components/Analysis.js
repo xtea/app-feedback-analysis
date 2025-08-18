@@ -25,6 +25,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { FaApple, FaAndroid } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
+import { trackEvent } from '../lib/analytics';
 
 const Analysis = () => {
   const { appId } = useParams();
@@ -199,6 +200,7 @@ const Analysis = () => {
     };
   };
   const handleExportPdf = async () => {
+    trackEvent('export_report_pdf', { app_id: appId });
     const reportEl = document.getElementById('analysis-report');
     if (!reportEl) return;
     let revertSvgs = () => {};

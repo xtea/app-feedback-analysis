@@ -5,23 +5,45 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico?v2" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta name="description" content="App Feedback Analysis Tool - Analyze Apple App Store and Google Play reviews with AI for insights." />
-    <meta name="keywords" content="app review analysis, app store reviews, google play reviews, sentiment analysis, AI insights, product roadmap, feature requests, ASO, user feedback analytics" />
+    <meta name="description" content="appreview.ai — Analyze Apple App Store and Google Play reviews with AI. Uncover sentiment, features, issues, and actionable insights to power your roadmap." />
+    <meta name="keywords" content="appreview.ai, app review analysis, app store reviews, google play reviews, sentiment analysis, AI insights, product roadmap, feature requests, ASO, user feedback analytics" />
     <meta name="robots" content="index,follow" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="App Feedback Analysis" />
-    <meta property="og:description" content="AI-powered insights from app store reviews." />
+    <meta property="og:title" content="appreview.ai — AI App Review Analysis" />
+    <meta property="og:description" content="AI-powered insights from app store reviews by appreview.ai." />
+    <meta property="og:site_name" content="appreview.ai" />
     <meta property="og:image" content="%PUBLIC_URL%/logo192.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="App Feedback Analysis" />
-    <meta name="twitter:description" content="AI-powered insights from app store reviews." />
+    <meta name="twitter:title" content="appreview.ai — AI App Review Analysis" />
+    <meta name="twitter:description" content="AI-powered insights from app store reviews by appreview.ai." />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <!-- Optional runtime config; define window.__ENV in /public/env.js -->
     <script src="%PUBLIC_URL%/env.js"></script>
-    <title>App Feedback Analysis</title>
+    <!-- Google Tag Manager -->
+    <script>
+      (function(){
+        var env = (window.__ENV||{}); var GTM_ID = env.GTM_ID || env.GA_MEASUREMENT_ID || env.REACT_APP_GA_MEASUREMENT_ID;
+        // Prefer explicitly setting window.__ENV.GTM_ID = 'GTM-XXXX';
+        if (GTM_ID && GTM_ID.indexOf('GTM-') === 0) {
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer',GTM_ID);
+        } else {
+          // Fallback: define dataLayer to avoid runtime errors in dev
+          window.dataLayer = window.dataLayer || [];
+        }
+      })();
+    </script>
+    <title>AppReview.ai — AI insights from app stores</title>
   </head>
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MZQCW7DH"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
   </body>

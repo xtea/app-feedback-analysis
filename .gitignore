@@ -80,6 +80,7 @@ public
 !client/public/robots.txt
 !client/public/favicon.ico
 !client/public/index.html
+!client/public/**
 
 
 # Storybook build outputs

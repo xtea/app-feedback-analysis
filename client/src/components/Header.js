@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { BarChart3, Home, LogOut, LogIn, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { trackEvent } from '../lib/analytics';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
+      trackEvent('logout');
       await supabase.auth.signOut();
       navigate('/login');
     } catch (_) {}
@@ -33,15 +35,15 @@ const Header = () => {
   return (
     <header className="bg-white shadow-sm border-b">
       <Helmet>
-        <meta name="author" content="App Feedback Analysis" />
-        <meta name="application-name" content="App Feedback Analysis" />
+        <meta name="author" content="appreview.ai" />
+        <meta name="application-name" content="appreview.ai" />
       </Helmet>
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2 text-base sm:text-xl font-bold text-gray-800 hover:text-gray-700 transition-colors">
             <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
-            <span className="hidden xs:inline sm:inline">App Feedback Analysis</span>
-            <span className="xs:hidden text-sm">AFA</span>
+            <span className="hidden xs:inline sm:inline">appreview.ai</span>
+            <span className="xs:hidden text-sm">appreview</span>
           </Link>
           <nav className="flex items-center space-x-2 sm:space-x-4">
             <Link to="/" className="inline-flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors p-2 sm:p-1">
@@ -64,7 +66,7 @@ const Header = () => {
               </div>
             ) : (
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => { trackEvent('login_click'); navigate('/login'); }}
                 className="inline-flex items-center px-2 sm:px-3 py-1.5 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors min-w-0"
               >
                 <LogIn className="w-4 h-4 mr-0 sm:mr-1.5" />

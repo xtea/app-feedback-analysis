@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
+import { trackEvent } from '../lib/analytics';
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ export default function AuthPage() {
 
     try {
       if (isSignUp) {
+        trackEvent('signup_submit');
         // Sign up
         if (password !== confirmPassword) {
           setError('Passwords do not match');
@@ -53,6 +55,7 @@ export default function AuthPage() {
           setIsSignUp(false);
         }
       } else {
+        trackEvent('login_submit');
         // Sign in
         const { error } = await supabase.auth.signInWithPassword({
           email,
