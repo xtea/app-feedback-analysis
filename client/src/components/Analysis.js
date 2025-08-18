@@ -290,11 +290,20 @@ const Analysis = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Helmet>
         <title>Analysis for {appId} | App Feedback Analysis</title>
-        <meta name="description" content={`Insights, sentiment, top issues, and strengths for ${appId}`} />
+        <meta name="description" content={`AI insights for ${appId}: sentiment, top issues, strengths, and recommendations from App Store and Google Play reviews.`} />
         <meta name="robots" content="index,follow" />
+        <meta name="keywords" content={`app analysis, app reviews, ${appId}, app sentiment, app issues, product insights, app store analysis, google play analysis`} />
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:title" content={`Analysis for ${appId}`} />
         <meta property="og:description" content="AI-powered analysis of app store reviews for actionable insights." />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Dataset',
+          name: `App Feedback Analysis for ${appId}`,
+          description: 'Aggregated insights derived from user reviews including sentiment distribution and top issues.',
+          url: typeof window !== 'undefined' ? window.location.href : '',
+          creator: { '@type': 'Organization', name: 'App Feedback Analysis' }
+        })}</script>
       </Helmet>
       {/* Header Section */}
       <div className="bg-white border-b border-gray-200 shadow-sm">

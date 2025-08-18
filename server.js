@@ -7,6 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 8888;
 const isProduction = process.env.NODE_ENV === 'production';
 // const requireAuth = require('./middleware/auth');
+const db = require('./services/db');
 
 // CORS configuration - allow React dev server and production
 app.use(cors({
@@ -44,6 +45,59 @@ app.use('/api/appstore', appStoreRoutes);
 app.use('/api/analysis', analysisRoutes);
 // Public access to jobs API (no login required)
 app.use('/api/jobs', jobRoutes);
+
+
+// Helper to compute absolute base URL for SEO endpoints
+function getBaseUrl(req) {
+  const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'http').split(',')[0];
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  return `${proto}://${host}`;
+}
+
+// robots.txt for crawlers
+app.get('/robots.txt', (req, res) => {
+  const baseUrl = getBaseUrl(req);
+  const content = [
+    'User-agent: *',
+    'Allow: /',
+    `Sitemap: ${baseUrl}/sitemap.xml`,
+    ''
+  ].join('\n');
+  res.type('text/plain').send(content);
+});
+
+// Dynamic sitemap.xml built from known analysis pages
+app.get('/sitemap.xml', (req, res) => {
+  try {
+    const baseUrl = getBaseUrl(req);
+    const rows = db.prepare('SELECT app_id as appId, timestamp FROM analyses ORDER BY timestamp DESC').all();
+
+    const urls = [];
+    // Home
+    urls.push({ loc: `${baseUrl}/`, changefreq: 'weekly', priority: '0.9' });
+    // Login page
+    urls.push({ loc: `${baseUrl}/login`, changefreq: 'monthly', priority: '0.3' });
+    // Analysis pages
+    for (const row of rows) {
+      const lastmod = row.timestamp ? new Date(row.timestamp).toISOString() : undefined;
+      urls.push({ loc: `${baseUrl}/analysis/${encodeURIComponent(row.appId)}`, lastmod, changefreq: 'weekly', priority: '0.7' });
+    }
+
+    const xml = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      ...urls.map(u => `  <url>\n    <loc>${u.loc}</loc>${u.lastmod ? `\n    <lastmod>${u.lastmod}</lastmod>` : ''}\n    <changefreq>${u.changefreq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`),
+      '</urlset>'
+    ].join('\n');
+
+    res.type('application/xml').send(xml);
+  } catch (e) {
+    // On error, return a minimal sitemap with home only
+    const baseUrl = getBaseUrl(req);
+    const fallback = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>${baseUrl}/</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.9</priority>\n  </url>\n</urlset>`;
+    res.type('application/xml').send(fallback);
+  }
+});
 
 
 app.listen(PORT, '0.0.0.0', () => {

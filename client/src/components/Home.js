@@ -208,12 +208,23 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Helmet>
-        <title>App Feedback Analysis | Fetch and Analyze App Store Reviews with AI</title>
-        <meta name="description" content="Analyze Apple App Store and Google Play Store reviews with AI to extract features, issues, sentiment, and actionable insights." />
+        <title>App Feedback Analysis | AI App Store Review Insights</title>
+        <meta name="description" content="Analyze Apple App Store and Google Play reviews with AI. Extract features, issues, sentiment, star rating trends, and actionable insights for product roadmaps." />
         <meta name="robots" content="index,follow" />
+        <meta name="keywords" content="app review analysis, app store reviews, google play reviews, app sentiment analysis, AI product insights, feature requests analysis, user feedback analytics, app ratings, ASO insights, app feedback analyzer" />
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.origin : ''} />
         <meta property="og:title" content="App Feedback Analysis" />
         <meta property="og:description" content="AI-powered analysis of app store reviews for actionable insights." />
+        <script type="application/ld+json">{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'App Feedback Analysis',
+          applicationCategory: 'BusinessApplication',
+          description: 'Analyze Apple App Store and Google Play reviews with AI to extract features, issues, and sentiment.',
+          url: typeof window !== 'undefined' ? window.location.origin : '',
+          operatingSystem: 'Any',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }
+        })}</script>
       </Helmet>
       {/* Hero Section */}
       <div className="relative overflow-hidden">

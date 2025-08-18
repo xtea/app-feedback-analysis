@@ -77,6 +77,10 @@ dist
 # Gatsby files
 .cache/
 public
+!client/public/robots.txt
+!client/public/favicon.ico
+!client/public/index.html
+
 
 # Storybook build outputs
 .out
@@ -113,3 +117,4 @@ sw.js.map
 manifest.json
 
 .history/
+deploy.sh
