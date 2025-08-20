@@ -36,15 +36,29 @@ const Header = () => {
   return (
     <header className="bg-white shadow-sm border-b">
       <Helmet>
-        <meta name="author" content="appreview.ai" />
-        <meta name="application-name" content="appreview.ai" />
+        <meta name="author" content="AppReview.ai" />
+        <meta name="application-name" content="AppReview.ai" />
       </Helmet>
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2 text-base sm:text-xl font-bold text-gray-800 hover:text-gray-700 transition-colors">
-            <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
-            <span className="hidden xs:inline sm:inline">appreview.ai</span>
-            <span className="xs:hidden text-sm">appreview</span>
+          <Link to="/" className="flex items-center space-x-2 group">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur-sm opacity-75 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-200">
+                <BarChart3 className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="hidden xs:inline text-lg sm:text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">
+                AppReview.ai
+              </span>
+              <span className="xs:hidden text-sm font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                AppReview
+              </span>
+              <span className="hidden xs:inline text-xs text-gray-500 font-medium -mt-1 tracking-wide">
+                AI-Powered Review Insights
+              </span>
+            </div>
           </Link>
           <nav className="flex items-center space-x-2 sm:space-x-4">
             <Link to="/" className="inline-flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors p-2 sm:p-1">

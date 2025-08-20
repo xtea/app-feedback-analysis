@@ -5,6 +5,9 @@ import Header from './components/Header';
 import Home from './components/Home';
 import Analysis from './components/Analysis';
 import Auth from './components/Auth';
+import Privacy from './components/Privacy';
+import Terms from './components/Terms';
+import Footer from './components/Footer';
 import './App.css';
 import { useEffect } from 'react';
 import { trackPageView } from './lib/analytics';
@@ -30,8 +33,11 @@ function App() {
               <Route path="/login" element={<Auth />} />
               <Route path="/" element={<Home />} />
               <Route path="/analysis/:appId" element={<Analysis />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
             </Routes>
           </main>
+          <Footer />
         </div>
       </Router>
     </HelmetProvider>

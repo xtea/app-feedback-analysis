@@ -5,7 +5,7 @@ const Privacy = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <Helmet>
-        <title>Privacy Policy | appreview.ai</title>
+        <title>Privacy Policy | AppReview.ai</title>
         <meta name="robots" content="index,follow" />
       </Helmet>
       
@@ -19,7 +19,7 @@ const Privacy = () => {
         <div className="prose prose-slate max-w-none">
           <div className="mb-8">
             <p className="text-lg text-gray-700 leading-relaxed">
-              At appreview.ai ("we," "our," or "us"), we are committed to protecting your privacy and ensuring 
+              At AppReview.ai ("we," "our," or "us"), we are committed to protecting your privacy and ensuring 
               the security of your personal information. This Privacy Policy explains how we collect, use, 
               process, and protect information when you use our website and services.
             </p>
@@ -136,7 +136,7 @@ const Privacy = () => {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">10. Contact Information</h2>
             <p className="mb-4">If you have questions, concerns, or requests regarding this Privacy Policy or your personal information, please contact us:</p>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p><strong>Email:</strong> privacy@appreview.ai</p>
+              <p><strong>Email:</strong> privacy@AppReview.ai</p>
               <p><strong>Subject Line:</strong> Privacy Policy Inquiry</p>
             </div>
           </section>

@@ -215,19 +215,19 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Helmet>
-        <title>appreview.ai | AI App Store Review Insights</title>
-        <meta name="description" content="appreview.ai analyzes Apple App Store and Google Play reviews with AI. Extract features, issues, sentiment, rating trends, and actionable insights for product roadmaps." />
+        <title>AppReview.ai | AI App Store Review Insights</title>
+        <meta name="description" content="AppReview.ai analyzes Apple App Store and Google Play reviews with AI. Extract features, issues, sentiment, rating trends, and actionable insights for product roadmaps." />
         <meta name="robots" content="index,follow" />
         <meta name="keywords" content="app review analysis, app store reviews, google play reviews, app sentiment analysis, AI product insights, feature requests analysis, user feedback analytics, app ratings, ASO insights, app feedback analyzer" />
         <link rel="canonical" href={typeof window !== 'undefined' ? window.location.origin : ''} />
-        <meta property="og:title" content="appreview.ai — AI App Review Analysis" />
-        <meta property="og:description" content="AI-powered analysis of app store reviews by appreview.ai." />
+        <meta property="og:title" content="AppReview.ai — AI App Review Analysis" />
+        <meta property="og:description" content="AI-powered analysis of app store reviews by AppReview.ai." />
         <script type="application/ld+json">{JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'WebApplication',
-          name: 'appreview.ai',
+          name: 'AppReview.ai',
           applicationCategory: 'BusinessApplication',
-          description: 'appreview.ai analyzes Apple App Store and Google Play reviews with AI to extract features, issues, and sentiment.',
+          description: 'AppReview.ai analyzes Apple App Store and Google Play reviews with AI to extract features, issues, and sentiment.',
           url: typeof window !== 'undefined' ? window.location.origin : '',
           operatingSystem: 'Any',
           offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }
