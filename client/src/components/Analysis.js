@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { 
   ArrowLeft, 
@@ -35,6 +35,7 @@ const Analysis = () => {
   const [appMeta, setAppMeta] = useState({ name: null, storeUrl: null });
   const [isAuthed, setIsAuthed] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchAnalysis();
@@ -638,7 +639,7 @@ const Analysis = () => {
             <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Unlock Full Report</h3>
             <p className="text-sm sm:text-base text-gray-700 mb-4">Sign in to view detailed charts and recommendations.</p>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/login', { state: { redirectTo: location.pathname + location.search } })}
               className="inline-flex items-center px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm sm:text-base"
             >
               Unblock Content

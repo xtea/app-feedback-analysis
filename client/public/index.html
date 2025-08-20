@@ -20,30 +20,41 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <!-- Optional runtime config; define window.__ENV in /public/env.js -->
     <script src="%PUBLIC_URL%/env.js"></script>
-    <!-- Google Tag Manager -->
+    <!-- GA4 via env (no hardcoded ID) -->
     <script>
-      (function(){
-        var env = (window.__ENV||{}); var GTM_ID = env.GTM_ID || env.GA_MEASUREMENT_ID || env.REACT_APP_GA_MEASUREMENT_ID;
-        // Prefer explicitly setting window.__ENV.GTM_ID = 'GTM-XXXX';
-        if (GTM_ID && GTM_ID.indexOf('GTM-') === 0) {
-          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer',GTM_ID);
-        } else {
-          // Fallback: define dataLayer to avoid runtime errors in dev
-          window.dataLayer = window.dataLayer || [];
-        }
+      (function () {
+        var env = (window.__ENV || {});
+        var GA_ID = env.GA_MEASUREMENT_ID;
+        if (!GA_ID) return;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', GA_ID);
+      })();
+    </script>
+    <script>
+      (function () {
+        var env = (window.__ENV || {});
+        var GA_ID = env.GA_MEASUREMENT_ID || 'G-SVZ6VHFYSV';
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', GA_ID);
       })();
     </script>
     <title>AppReview.ai — AI insights from app stores</title>
   </head>
   <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MZQCW7DH"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
   </body>

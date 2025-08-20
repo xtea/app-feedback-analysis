@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { BarChart3, Home, LogOut, LogIn, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [userEmail, setUserEmail] = useState(null);
 
   useEffect(() => {
@@ -66,7 +67,7 @@ const Header = () => {
               </div>
             ) : (
               <button
-                onClick={() => { trackEvent('login_click'); navigate('/login'); }}
+                onClick={() => { trackEvent('login_click'); navigate('/login', { state: { redirectTo: location.pathname + location.search } }); }}
                 className="inline-flex items-center px-2 sm:px-3 py-1.5 rounded-lg border border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors min-w-0"
               >
                 <LogIn className="w-4 h-4 mr-0 sm:mr-1.5" />

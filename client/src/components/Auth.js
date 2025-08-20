@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { trackEvent } from '../lib/analytics';
 
 export default function AuthPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = (location.state && location.state.redirectTo) || '/';
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,10 +19,10 @@ export default function AuthPage() {
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) navigate('/');
+      if (session?.user) navigate(redirectTo);
     });
     return () => sub?.subscription?.unsubscribe?.();
-  }, [navigate]);
+  }, [navigate, redirectTo]);
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -64,6 +66,8 @@ export default function AuthPage() {
 
         if (error) {
           setError(error.message);
+        } else {
+          navigate(redirectTo);
         }
       }
     } catch (err) {
