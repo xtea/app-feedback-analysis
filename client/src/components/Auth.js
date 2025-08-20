@@ -88,28 +88,21 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-6 sm:mb-8">
-          <Link to="/" className="inline-flex items-center text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 hover:text-blue-600">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-1.5 sm:p-2 rounded-lg mr-2 sm:mr-3">
-              <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-            </div>
-            <span className="hidden sm:inline">App Feedback Analysis</span>
-            <span className="sm:hidden">AFA</span>
-          </Link>
-          <p className="text-gray-600 mt-2 text-sm sm:text-base">
-            {isSignUp ? 'Create your account' : 'Sign in to your account'}
-          </p>
-        </div>
+
 
         {/* Auth Form */}
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-6 sm:p-8">
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-xl border border-white/50 p-6 sm:p-8">
+          <div className="text-center mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              {isSignUp ? 'Create Account' : 'Welcome Back'}
+            </h2>
+            <p className="text-gray-600 mt-2 text-sm sm:text-base">
+              {isSignUp ? 'Transform your app with AI-powered review insights' : 'Sign in to continue your analysis'}
+            </p>
+          </div>
           <form onSubmit={handleAuth} className="space-y-5 sm:space-y-6">
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email address
-              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
@@ -120,7 +113,7 @@ export default function AuthPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                  className="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/50 hover:bg-white focus:bg-white text-sm sm:text-base"
                   placeholder="Enter your email"
                 />
               </div>
@@ -128,9 +121,6 @@ export default function AuthPage() {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
@@ -141,7 +131,7 @@ export default function AuthPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                  className="block w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/50 hover:bg-white focus:bg-white text-sm sm:text-base"
                   placeholder="Enter your password"
                 />
                 <button
@@ -161,9 +151,6 @@ export default function AuthPage() {
             {/* Confirm Password Field (Sign Up Only) */}
             {isSignUp && (
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password
-                </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
@@ -174,7 +161,7 @@ export default function AuthPage() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                    className="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/50 hover:bg-white focus:bg-white text-sm sm:text-base"
                     placeholder="Confirm your password"
                   />
                 </div>
@@ -201,7 +188,7 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center py-2.5 sm:py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm sm:text-base font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center py-3 sm:py-3.5 px-4 border border-transparent rounded-lg shadow-lg text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin mr-2" />
@@ -215,7 +202,7 @@ export default function AuthPage() {
             <button
               type="button"
               onClick={toggleMode}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-200"
             >
               {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
             </button>
