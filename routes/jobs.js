@@ -5,10 +5,28 @@ const fs = require('fs-extra');
 const path = require('path');
 const db = require('../services/db');
 const { detectStoreFromInput } = require('../services/storeDetector');
+const requireAuth = require('../middleware/auth');
+const { hasEnoughCredit, subtractUserCredit } = require('../services/creditService');
 
-// API 1: Submit analysis request
+// API 1: Submit analysis request (supports both authenticated and anonymous users)
 router.post('/analyze', async (req, res) => {
   try {
+    // Check if user is authenticated (optional)
+    let userId = null;
+    const authHeader = req.headers.authorization;
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const token = authHeader.slice(7);
+        const payload = jwt.verify(token, process.env.SUPABASE_JWT_SECRET);
+        userId = payload.sub;
+        console.log(`[JOBS] Authenticated user: ${userId}`);
+      } catch (authError) {
+        console.log('[JOBS] Invalid auth token provided, proceeding as anonymous');
+      }
+    }
+
     const {
       appId,
       storeType = 'auto',
@@ -54,6 +72,8 @@ router.post('/analyze', async (req, res) => {
       const ageMs = Date.now() - new Date(row.timestamp).getTime();
       const twentyFourHours = 24 * 60 * 60 * 1000;
       if (ageMs <= twentyFourHours) {
+        // Cached result found - return without credit check (no new analysis needed)
+        console.log(`[JOBS] Returning cached result for ${finalAppId} (age: ${Math.round(ageMs / (1000 * 60 * 60))}h)`);
         const summary = JSON.parse(row.summary_json);
         const positiveAnalysis = row.positive_json ? JSON.parse(row.positive_json) : null;
         const negativeAnalysis = row.negative_json ? JSON.parse(row.negative_json) : null;
@@ -70,6 +90,46 @@ router.post('/analyze', async (req, res) => {
           result: cachedJob.result,
         }});
       }
+    }
+
+    // Credit check for authenticated users (before starting new analysis)
+    if (userId) {
+      console.log(`[JOBS] Checking credits for authenticated user: ${userId}`);
+      
+      // Check if user has enough credits
+      const creditCheck = await hasEnoughCredit(userId, 1);
+      if (!creditCheck.success) {
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to check user credits',
+          details: creditCheck.error
+        });
+      }
+      
+      if (!creditCheck.hasEnough) {
+        return res.status(402).json({
+          success: false,
+          error: 'Insufficient credits',
+          currentCredit: creditCheck.currentCredit,
+          requiredCredit: 1,
+          message: 'You need at least 1 credit to perform an analysis. Please add credits to your account.'
+        });
+      }
+      
+      // Deduct 1 credit before starting analysis
+      console.log(`[JOBS] User ${userId} has sufficient credits (${creditCheck.currentCredit}), deducting 1 credit...`);
+      const deductResult = await subtractUserCredit(userId, 1);
+      if (!deductResult.success) {
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to deduct credits',
+          details: deductResult.error
+        });
+      }
+      
+      console.log(`[JOBS] Successfully deducted 1 credit from user ${userId}, new balance: ${deductResult.newCredit}`);
+    } else {
+      console.log('[JOBS] Anonymous user - analysis will proceed without credit deduction');
     }
 
     // Create and start the job
