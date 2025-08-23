@@ -39,12 +39,15 @@ app.use((req, res, next) => {
 const appStoreRoutes = require('./routes/appStore');
 const analysisRoutes = require('./routes/analysis');
 const jobRoutes = require('./routes/jobs');
+const creditRoutes = require('./routes/credit');
 
 // Routes
 app.use('/api/appstore', appStoreRoutes);
 app.use('/api/analysis', analysisRoutes);
 // Public access to jobs API (no login required)
 app.use('/api/jobs', jobRoutes);
+// Credit management API (requires authentication)
+app.use('/api/credit', creditRoutes);
 
 
 // Helper to compute absolute base URL for SEO endpoints

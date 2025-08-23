@@ -12,6 +12,7 @@
     "heroku-postbuild": "npm run install-client && npm run build"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.56.0",
     "app-store-scraper": "^0.18.0",
     "axios": "^1.6.0",
     "better-sqlite3": "^12.2.0",
