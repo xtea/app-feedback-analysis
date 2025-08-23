@@ -1,21 +1,41 @@
-# App Feedback Analysis Tool
+# AppReview.ai - AI-Powered App Store Review Analysis
 
-A web-based tool to collect and analyze app store feedback from Apple App Store and Google Play Store using AI/LLM for sentiment analysis and feature extraction.
+**🌐 Website: [AppReview.ai](https://appreview.ai)**
 
-## Features
+A comprehensive web-based platform to collect and analyze app store feedback from Apple App Store and Google Play Store using advanced AI/LLM technology for sentiment analysis and feature extraction. Transform app store reviews into actionable insights to improve your app's success.
 
-- **App Store Integration**: Fetch reviews from both Apple App Store and Google Play Store
-- **AI-Powered Analysis**: Use OpenAI's GPT models to analyze review sentiment and extract insights
-- **Categorization**: Automatically categorize reviews into Good and Bad categories
-- **Feature Extraction**: Extract key features, user experiences, and improvement areas
-- **Beautiful UI**: Modern React-based interface with charts and visualizations
-- **Data Persistence**: Save analysis results locally for future reference
+## 🚀 Features
 
-## Prerequisites
+### Core Analysis
+- **📱 Multi-Platform Support**: Fetch reviews from both Apple App Store and Google Play Store
+- **🤖 AI-Powered Analysis**: Advanced OpenAI GPT models for sentiment analysis and insight extraction
+- **📊 Smart Categorization**: Automatically categorize reviews into positive, negative, and neutral
+- **🔍 Feature Extraction**: Extract key features, user experiences, and improvement areas
+- **📈 Visual Analytics**: Interactive charts and visualizations for comprehensive insights
 
-- Node.js (v18 or higher recommended)
-- npm or yarn
-- OpenAI API key
+### User Experience
+- **👤 User Authentication**: Secure Supabase-powered authentication system
+- **🪙 Credit System**: Pay-per-analysis credit system for authenticated users
+- **⚡ Real-time Updates**: Live credit balance display in header
+- **💾 Smart Caching**: 24-hour analysis caching to prevent duplicate charges
+- **🎨 Modern UI**: Beautiful, responsive React-based interface
+
+### Technical Excellence
+- **🔄 Async Processing**: Non-blocking job queue for large-scale analysis
+- **📱 Mobile Responsive**: Optimized for desktop, tablet, and mobile devices
+- **🚀 High Performance**: Efficient data processing and API optimization
+- **🔒 Secure**: JWT-based authentication and secure data handling
+
+## 📋 Prerequisites
+
+- **Node.js** (v18 or higher recommended)
+- **npm** or **yarn**
+- **OpenAI API key** (for AI analysis)
+- **Supabase account** (for authentication and credit management)
+  - Supabase project URL
+  - Supabase anon/public key
+  - Supabase service role key (for backend)
+  - Supabase JWT secret
 
 ## Installation
 
@@ -42,13 +62,42 @@ A web-based tool to collect and analyze app store feedback from Apple App Store 
    cp env.example .env
    ```
    
-   Edit `.env` and add your OpenAI API key and (optionally) model:
-   ```
+   Edit `.env` and configure the required services:
+   ```bash
+   # OpenAI Configuration (Required)
    OPENAI_API_KEY=your_openai_api_key_here
-   # Optional: choose model (default: gpt-4o). Examples: gpt-4o, gpt-4-turbo, gpt-4
-   OPENAI_MODEL=gpt-4o
-   # Optional: server port (default 8888)
-   PORT=8888
+   OPENAI_MODEL=gpt-4o  # Optional: gpt-4o, gpt-4-turbo, gpt-4
+   
+   # Supabase Configuration (Required for auth & credits)
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+   SUPABASE_JWT_SECRET=your_supabase_jwt_secret
+   
+   # Server Configuration
+   PORT=8888  # Optional: default 8888
+   ```
+
+5. **Set up Supabase database**
+   
+   Create the `user_credit` table in your Supabase database:
+   ```sql
+   CREATE TABLE user_credit (
+     user_id VARCHAR PRIMARY KEY,
+     credit BIGINT DEFAULT 0,
+     created_at TIMESTAMPTZ DEFAULT NOW()
+   );
+   ```
+
+6. **Set up frontend environment**
+   ```bash
+   cd client
+   cp .env.example .env
+   ```
+   
+   Edit `client/.env` for React app:
+   ```bash
+   REACT_APP_SUPABASE_URL=https://your-project.supabase.co
+   REACT_APP_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
 ## Usage
@@ -114,20 +163,36 @@ chmod +x dev-start.sh
    - Positive insights (features, user experiences)
    - Improvement areas (issues, suggested fixes)
 
-## API Endpoints
+## 🔌 API Endpoints
 
 ### Job Management (Async Analysis)
-- `POST /api/jobs/analyze` - Submit analysis job (returns job ID)
-- Request body fields:
-  - `appId` (string): Apple ID, Android package, or official store URL
-  - `storeType` (string, optional): `apple` | `google` | `auto` (default: `auto`)
-  - `usePagination` (boolean, optional): default `true`
-  - `pageSize` (number, optional): Google per-page size (default `100`)
-  - `country` (string, optional): default `us`
-  - Note: Apple pagination is inherently capped by the source to 10 pages max.
+- `POST /api/jobs/analyze` - Submit analysis job (supports both authenticated & anonymous users)
+  - **Authentication**: Optional (JWT Bearer token in Authorization header)
+  - **Credit Cost**: 1 credit for authenticated users, free for anonymous
+  - **Caching**: 24-hour cache prevents duplicate charges
+  - Request body fields:
+    - `appId` (string): Apple ID, Android package, or official store URL
+    - `storeType` (string, optional): `apple` | `google` | `auto` (default: `auto`)
+    - `usePagination` (boolean, optional): default `true`
+    - `pageSize` (number, optional): Google per-page size (default `100`)
+    - `country` (string, optional): default `us`
+    - Note: Apple pagination is inherently capped by the source to 10 pages max.
 - `GET /api/jobs/status/:jobId` - Check job status and progress
 - `GET /api/jobs/result/:jobId` - Get completed analysis results
 - `GET /api/jobs/app/:appId` - Get all jobs for an app
+
+### Credit Management (Authenticated Users)
+- `GET /api/credit/balance` - Get current user's credit balance
+- `POST /api/credit/add` - Add credits to user account
+  - Body: `{ "amount": number }`
+- `POST /api/credit/subtract` - Subtract credits from user account
+  - Body: `{ "amount": number }`
+- `POST /api/credit/set` - Set user's credit to specific amount
+  - Body: `{ "amount": number, "userId": "optional" }`
+- `POST /api/credit/check` - Check if user has sufficient credits
+  - Body: `{ "requiredAmount": number }`
+- `GET /api/credit/all` - Get all users' credit balances (admin)
+  - Query params: `?limit=50&offset=0`
 
 ### App Store Routes (Direct)
 - `POST /api/appstore/fetch-apple` - Fetch Apple App Store reviews
@@ -137,7 +202,7 @@ chmod +x dev-start.sh
 - `POST /api/analysis/analyze` - Analyze reviews using LLM (synchronous)
 - `GET /api/analysis/summary/:appId` - Get analysis summary
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 app-feedback-analysis/
@@ -145,23 +210,41 @@ app-feedback-analysis/
 ├── routes/                        # API route handlers
 │   ├── appStore.js               # App store data (direct)
 │   ├── analysis.js               # Legacy LLM analysis endpoints
-│   └── jobs.js                   # Async job submission & status APIs
+│   ├── jobs.js                   # Async job submission & status APIs
+│   └── credit.js                 # Credit management APIs
 ├── services/                      # Business logic
-│   ├── appStoreService.js        # Apple & Google review fetchers (paged & single-shot)
+│   ├── appStoreService.js        # Apple & Google review fetchers
 │   ├── jobService.js             # In-memory job queue & processing
 │   ├── analysisService.js        # OpenAI integration (GPT-4 configurable)
-│   └── storeDetector.js          # Auto-detect store from raw input/URL
-├── data/                    # Local data storage
-├── client/                  # React frontend
+│   ├── creditService.js          # Credit management & Supabase integration
+│   ├── supabase.js               # Supabase backend client
+│   ├── storeDetector.js          # Auto-detect store from raw input/URL
+│   └── db.js                     # SQLite database (local storage)
+├── middleware/                    # Express middleware
+│   └── auth.js                   # JWT authentication middleware
+├── data/                          # Local data storage
+├── client/                        # React frontend
 │   ├── src/
-│   │   ├── components/      # React components
-│   │   │   ├── Header.js
-│   │   │   ├── Home.js
-│   │   │   └── Analysis.js
-│   │   ├── App.js
-│   │   └── index.js
-│   └── public/
-└── package.json
+│   │   ├── components/           # React components
+│   │   │   ├── Header.js         # Navigation with credit balance
+│   │   │   ├── Home.js           # Analysis submission form
+│   │   │   ├── Analysis.js       # Results visualization
+│   │   │   ├── Auth.js           # Login/signup forms
+│   │   │   ├── Footer.js         # Site footer
+│   │   │   ├── Privacy.js        # Privacy policy
+│   │   │   └── Terms.js          # Terms of service
+│   │   ├── lib/                  # Frontend utilities
+│   │   │   ├── supabase.js       # Supabase frontend client
+│   │   │   ├── creditService.js  # Frontend credit API calls
+│   │   │   ├── analytics.js      # Google Analytics integration
+│   │   │   └── logger.js         # Frontend logging utilities
+│   │   ├── App.js                # Main React app component
+│   │   └── index.js              # React app entry point
+│   └── public/                   # Static assets
+├── env.example                   # Environment variables template
+├── dev-start.sh                  # Development startup script
+├── restart-dev.sh                # Development restart script
+└── package.json                  # Dependencies and scripts
 ```
 
 ## Analysis Features
@@ -217,18 +300,49 @@ app-feedback-analysis/
 - Google supports deeper pagination via tokens; adjust `pageSize` as needed
 - Keep `OPENAI_MODEL` choice in mind for cost/latency tradeoffs
 
-## Contributing
+## 🪙 Credit System & Authentication
+
+### How Credits Work
+- **Free Tier**: Anonymous users can perform free analysis with basic features
+- **Authenticated Users**: Pay-per-analysis credit system (1 credit = 1 analysis)
+- **Smart Caching**: Analyses are cached for 24 hours to prevent duplicate charges
+- **Credit Management**: Full API for adding, subtracting, and managing credits
+
+### Authentication Features
+- **Supabase Integration**: Secure, scalable authentication system
+- **JWT Tokens**: Industry-standard authentication tokens
+- **User Profiles**: Email-based user accounts with secure password handling
+- **Session Management**: Persistent sessions with automatic token refresh
+
+### Pricing Model
+- **Transparent**: 1 credit per analysis for authenticated users
+- **Fair Usage**: Anonymous users can test the platform for free
+- **No Hidden Costs**: Clear credit deduction before analysis starts
+- **Cache Optimization**: Repeated analysis within 24 hours uses cache (no charge)
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
 4. Add tests if applicable
-5. Submit a pull request
+5. Commit your changes (`git commit -m 'Add some amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Submit a pull request
 
-## License
+## 📄 License
 
 MIT License - see LICENSE file for details
 
-## Support
+## 🆘 Support & Contact
 
-For issues and questions, please open an issue on the GitHub repository. 
+- **🌐 Website**: [AppReview.ai](https://appreview.ai)
+- **📧 Issues**: For technical issues, please open an issue on the GitHub repository
+- **📖 Documentation**: This README contains comprehensive setup and usage instructions
+- **🚀 Feature Requests**: Submit feature requests through GitHub issues
+
+---
+
+**Built with ❤️ by the AppReview.ai Team**
+
+*Transform your app store reviews into actionable insights with the power of AI.* 
