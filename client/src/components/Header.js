@@ -1,34 +1,93 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { BarChart3, Home, LogOut, LogIn, User } from 'lucide-react';
+import { BarChart3, Home, LogOut, LogIn, User, Coins } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
+import { getUserCredit } from '../lib/creditService';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [userEmail, setUserEmail] = useState(null);
+  const [creditBalance, setCreditBalance] = useState(null);
+  const [loadingCredit, setLoadingCredit] = useState(false);
+
+  // Function to fetch user credit balance
+  const fetchCreditBalance = async (session) => {
+    if (!session?.user) {
+      setCreditBalance(null);
+      return;
+    }
+    
+    setLoadingCredit(true);
+    try {
+      const result = await getUserCredit();
+      if (result.success) {
+        setCreditBalance(result.credit);
+      } else {
+        console.warn('[HEADER] Failed to fetch credit balance:', result.error);
+        setCreditBalance(null);
+      }
+    } catch (error) {
+      console.error('[HEADER] Error fetching credit balance:', error);
+      setCreditBalance(null);
+    } finally {
+      setLoadingCredit(false);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       const { data } = await supabase.auth.getSession();
       if (!mounted) return;
-      setUserEmail(data?.session?.user?.email || null);
+      
+      const email = data?.session?.user?.email || null;
+      setUserEmail(email);
+      
+      // Fetch credit balance if user is authenticated
+      if (data?.session?.user) {
+        await fetchCreditBalance(data.session);
+      }
     })();
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserEmail(session?.user?.email || null);
+    
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
+      
+      const email = session?.user?.email || null;
+      setUserEmail(email);
+      
+      // Fetch credit balance when authentication state changes
+      await fetchCreditBalance(session);
     });
+    
     return () => {
       mounted = false;
       sub?.subscription?.unsubscribe?.();
     };
   }, []);
 
+  // Function to refresh credit balance (can be called from other components)
+  const refreshCreditBalance = React.useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    if (data?.session?.user) {
+      await fetchCreditBalance(data.session);
+    }
+  }, []);
+
+  // Expose refresh function globally for other components
+  React.useEffect(() => {
+    window.refreshHeaderCredit = refreshCreditBalance;
+    return () => {
+      delete window.refreshHeaderCredit;
+    };
+  }, [refreshCreditBalance]);
+
   const handleLogout = async () => {
     try {
       trackEvent('logout');
+      setCreditBalance(null); // Clear credit balance on logout
       await supabase.auth.signOut();
       navigate('/login');
     } catch (_) {}
@@ -67,10 +126,18 @@ const Header = () => {
             </Link>
             {userEmail ? (
               <div className="flex items-center space-x-1 sm:space-x-2">
-                <span className="inline-flex items-center px-2 sm:px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200">
-                  <User className="w-4 h-4 mr-1 sm:mr-1.5 text-gray-500" />
-                  <span className="text-xs sm:text-sm font-medium truncate max-w-20 sm:max-w-none">{userEmail.split('@')[0]}</span>
-                </span>
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  <span className="inline-flex items-center px-2 sm:px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200">
+                    <User className="w-4 h-4 mr-1 sm:mr-1.5 text-gray-500" />
+                    <span className="text-xs sm:text-sm font-medium truncate max-w-20 sm:max-w-none">{userEmail.split('@')[0]}</span>
+                  </span>
+                  <span className="inline-flex items-center px-2 sm:px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border border-amber-200">
+                    <Coins className="w-4 h-4 mr-1 sm:mr-1.5 text-amber-500" />
+                    <span className="text-xs sm:text-sm font-medium">
+                      {loadingCredit ? '...' : (creditBalance !== null ? creditBalance : '0')}
+                    </span>
+                  </span>
+                </div>
                 <button
                   onClick={handleLogout}
                   className="inline-flex items-center px-2 sm:px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors min-w-0"
