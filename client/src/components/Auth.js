@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { trackEvent } from '../lib/analytics';
+import { logger } from '../lib/logger';
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -18,10 +19,28 @@ export default function AuthPage() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) navigate(redirectTo);
+    console.log('🔍 Setting up auth state change listener');
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔄 Auth state changed:', {
+        event,
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email,
+        timestamp: new Date().toISOString()
+      });
+      
+      if (session?.user) {
+        console.log('✅ User authenticated, navigating to:', redirectTo);
+        navigate(redirectTo);
+      } else {
+        console.log('❌ No authenticated user in session');
+      }
     });
-    return () => sub?.subscription?.unsubscribe?.();
+    return () => {
+      console.log('🧹 Cleaning up auth state listener');
+      sub?.subscription?.unsubscribe?.();
+    };
   }, [navigate, redirectTo]);
 
   const handleAuth = async (e) => {
@@ -32,47 +51,127 @@ export default function AuthPage() {
 
     try {
       if (isSignUp) {
+        logger.auth.signup('STARTED', { email, passwordLength: password.length });
         trackEvent('signup_submit');
-        // Sign up
+        
+        // Client-side validation
         if (password !== confirmPassword) {
+          logger.auth.signup('VALIDATION_FAILED', { reason: 'Password mismatch' });
           setError('Passwords do not match');
           setLoading(false);
           return;
         }
         if (password.length < 6) {
+          logger.auth.signup('VALIDATION_FAILED', { reason: 'Password too short', length: password.length });
           setError('Password must be at least 6 characters');
           setLoading(false);
           return;
         }
 
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
+        logger.auth.signup('VALIDATION_PASSED', { 
+          email, 
+          passwordLength: password.length,
+          supabaseUrl: supabase.supabaseUrl,
+          hasAnonKey: !!supabase.supabaseKey
         });
-
-        if (error) {
-          setError(error.message);
-        } else {
-          setMessage('Check your email for the confirmation link!');
-          setIsSignUp(false);
+        
+        const signUpData = { email, password };
+        const startTime = Date.now();
+        
+        try {
+          const { data, error } = await supabase.auth.signUp(signUpData);
+          const duration = Date.now() - startTime;
+          
+          logger.auth.signup('SUPABASE_RESPONSE', { 
+            duration, 
+            hasData: !!data, 
+            hasError: !!error,
+            dataKeys: data ? Object.keys(data) : [],
+            errorCode: error?.code,
+            errorMessage: error?.message 
+          });
+          
+          if (error) {
+            logger.auth.error(error, { 
+              operation: 'signup',
+              email,
+              duration,
+              supabaseUrl: supabase.supabaseUrl
+            });
+            setError(error.message);
+          } else {
+            logger.auth.signup('SUCCESS', {
+              duration,
+              userId: data.user?.id,
+              userEmail: data.user?.email,
+              hasSession: !!data.session,
+              userConfirmed: data.user?.email_confirmed_at ? true : false
+            });
+            setMessage('Check your email for the confirmation link!');
+            setIsSignUp(false);
+          }
+        } catch (supabaseErr) {
+          const duration = Date.now() - startTime;
+          logger.auth.error(supabaseErr, { 
+            operation: 'signup_catch',
+            email,
+            duration
+          });
+          throw supabaseErr;
         }
       } else {
+        logger.auth.login('STARTED', { email });
         trackEvent('login_submit');
-        // Sign in
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) {
-          setError(error.message);
-        } else {
-          navigate(redirectTo);
+        
+        const startTime = Date.now();
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          const duration = Date.now() - startTime;
+          
+          logger.auth.login('SUPABASE_RESPONSE', { 
+            duration, 
+            hasData: !!data, 
+            hasError: !!error,
+            errorCode: error?.code 
+          });
+          
+          if (error) {
+            logger.auth.error(error, { 
+              operation: 'login',
+              email,
+              duration
+            });
+            setError(error.message);
+          } else {
+            logger.auth.login('SUCCESS', {
+              duration,
+              userId: data.user?.id,
+              redirectTo
+            });
+            navigate(redirectTo);
+          }
+        } catch (supabaseErr) {
+          const duration = Date.now() - startTime;
+          logger.auth.error(supabaseErr, { 
+            operation: 'login_catch',
+            email,
+            duration
+          });
+          throw supabaseErr;
         }
       }
     } catch (err) {
+      logger.auth.error(err, {
+        operation: isSignUp ? 'signup_outer_catch' : 'login_outer_catch',
+        email,
+        isSignUp
+      });
       setError('An unexpected error occurred');
     } finally {
+      logger.auth[isSignUp ? 'signup' : 'login']('COMPLETED', { loading: false });
       setLoading(false);
     }
   };
