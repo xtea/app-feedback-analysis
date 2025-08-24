@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { BarChart3, Home, LogOut, LogIn, User, Coins } from 'lucide-react';
+import { BarChart3, Home, LogOut, LogIn, User, Coins, Plus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { trackEvent } from '../lib/analytics';
 import { getUserCredit } from '../lib/creditService';
@@ -131,12 +131,24 @@ const Header = () => {
                     <User className="w-4 h-4 mr-1 sm:mr-1.5 text-gray-500" />
                     <span className="text-xs sm:text-sm font-medium truncate max-w-20 sm:max-w-none">{userEmail.split('@')[0]}</span>
                   </span>
-                  <span className="inline-flex items-center px-2 sm:px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border border-amber-200">
+                  <Link 
+                    to="/purchase-credits"
+                    className="inline-flex items-center px-2 sm:px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border border-amber-200 hover:from-amber-100 hover:to-yellow-100 hover:border-amber-300 transition-all duration-200 cursor-pointer"
+                    title="View and purchase credits"
+                  >
                     <Coins className="w-4 h-4 mr-1 sm:mr-1.5 text-amber-500" />
                     <span className="text-xs sm:text-sm font-medium">
                       {loadingCredit ? '...' : (creditBalance !== null ? creditBalance : '0')}
                     </span>
-                  </span>
+                  </Link>
+                  <Link
+                    to="/purchase-credits"
+                    className="inline-flex items-center px-2 sm:px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200 hover:from-blue-100 hover:to-blue-200 hover:border-blue-300 transition-all duration-200"
+                    title="Buy more credits"
+                  >
+                    <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-0 sm:mr-1" />
+                    <span className="hidden sm:inline text-xs sm:text-sm font-medium">Buy</span>
+                  </Link>
                 </div>
                 <button
                   onClick={handleLogout}

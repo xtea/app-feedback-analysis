@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Download, 
   Brain, 
@@ -14,12 +14,16 @@ import {
   Search,
   Zap,
   Shield,
-  Award
+  Award,
+  Coins,
+  Plus
 } from 'lucide-react';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import { FaApple, FaAndroid } from 'react-icons/fa';
 import { trackEvent } from '../lib/analytics';
+import { supabase } from '../lib/supabase';
+import { getUserCredit } from '../lib/creditService';
 
 const Home = () => {
   const [appId, setAppId] = useState('');
@@ -31,7 +35,46 @@ const Home = () => {
   const [currentJob, setCurrentJob] = useState(null);
   const [jobStatus, setJobStatus] = useState(null);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [user, setUser] = useState(null);
+  const [creditBalance, setCreditBalance] = useState(null);
   const navigate = useNavigate();
+
+  // Check authentication state and load credit balance
+  useEffect(() => {
+    const checkAuthAndCredits = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+        
+        if (user) {
+          const balance = await getUserCredit();
+          if (balance.success) {
+            setCreditBalance(balance.credit);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking auth/credits:', error);
+      }
+    };
+
+    checkAuthAndCredits();
+
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user || null);
+      if (session?.user) {
+        const balance = await getUserCredit();
+        if (balance.success) {
+          setCreditBalance(balance.credit);
+        }
+      } else {
+        setCreditBalance(null);
+      }
+    });
+
+    return () => {
+      sub?.subscription?.unsubscribe?.();
+    };
+  }, []);
 
   // Store detection from raw input (URL/package/numeric)
   const detectStoreFromInput = (rawInput) => {
@@ -293,6 +336,81 @@ const Home = () => {
           </div>
           
           <div className="p-4 sm:p-6 lg:p-8">
+            {/* Credit Purchase Prompt for Authenticated Users with Low Credits */}
+            {user && creditBalance !== null && creditBalance < 5 && (
+              <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 sm:p-6">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    <div className="bg-gradient-to-r from-amber-400 to-orange-500 w-10 h-10 rounded-lg flex items-center justify-center">
+                      <Coins className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {creditBalance === 0 ? 'No Credits Available' : 'Running Low on Credits'}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      You currently have <span className="font-semibold text-amber-600">{creditBalance} credits</span>. 
+                      {creditBalance === 0 
+                        ? ' You need credits to analyze app reviews and access full results.'
+                        : ' Each analysis costs 1 credit. Get more credits to continue analyzing apps.'
+                      }
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Link
+                        to="/purchase-credits"
+                        className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 text-sm"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Buy Credits
+                      </Link>
+                      <div className="text-xs text-gray-500 sm:flex sm:items-center">
+                        <span className="bg-white px-2 py-1 rounded border inline-block">
+                          10 credits = $1 USD
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Credit Info for Anonymous Users */}
+            {!user && (
+              <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 sm:p-6">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
+                      <Star className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Try Analysis for Free
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      Anonymous users can try basic analysis for free. For full features including 
+                      <span className="font-semibold"> detailed insights, PDF export, and unlimited access</span>, 
+                      create an account and purchase credits.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Link
+                        to="/login"
+                        className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 text-sm"
+                      >
+                        Sign Up & Get Credits
+                      </Link>
+                      <div className="text-xs text-gray-500 sm:flex sm:items-center">
+                        <span className="bg-white px-2 py-1 rounded border inline-block">
+                          Only $0.10 per analysis
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
               <div>
                 <label htmlFor="appId" className="block text-sm font-semibold text-gray-900 mb-3">

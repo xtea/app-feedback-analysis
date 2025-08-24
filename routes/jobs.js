@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createJob, getJob, getJobsByAppId, JOB_STATUS, createCompletedJobFromCache } = require('../services/jobService');
+const { createJob, getJob, getJobsByAppId, JOB_STATUS, createCompletedJobFromCache, getPendingJobsForApp } = require('../services/jobService');
 const fs = require('fs-extra');
 const path = require('path');
 const db = require('../services/db');
@@ -66,33 +66,7 @@ router.post('/analyze', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Store type must be either "apple" or "google" (or use "auto")' });
     }
 
-    // Cache check (24h)
-    const row = db.prepare('SELECT summary_json, positive_json, negative_json, store, timestamp FROM analyses WHERE app_id = ? LIMIT 1').get(finalAppId);
-    if (row) {
-      const ageMs = Date.now() - new Date(row.timestamp).getTime();
-      const twentyFourHours = 24 * 60 * 60 * 1000;
-      if (ageMs <= twentyFourHours) {
-        // Cached result found - return without credit check (no new analysis needed)
-        console.log(`[JOBS] Returning cached result for ${finalAppId} (age: ${Math.round(ageMs / (1000 * 60 * 60))}h)`);
-        const summary = JSON.parse(row.summary_json);
-        const positiveAnalysis = row.positive_json ? JSON.parse(row.positive_json) : null;
-        const negativeAnalysis = row.negative_json ? JSON.parse(row.negative_json) : null;
-        const analysis = { appId: finalAppId, storeType: row.store, summary, positiveAnalysis, negativeAnalysis, timestamp: row.timestamp };
-        const cachedJob = createCompletedJobFromCache(finalAppId, row.store, analysis);
-        return res.json({ success: true, data: {
-          jobId: cachedJob.id,
-          appId: cachedJob.appId,
-          storeType: cachedJob.storeType,
-          status: cachedJob.status,
-          message: cachedJob.message,
-          createdAt: cachedJob.createdAt,
-          options: cachedJob.options,
-          result: cachedJob.result,
-        }});
-      }
-    }
-
-    // Credit check for authenticated users (before starting new analysis)
+    // Credit check for authenticated users (before cache check)
     if (userId) {
       console.log(`[JOBS] Checking credits for authenticated user: ${userId}`);
       
@@ -115,9 +89,59 @@ router.post('/analyze', async (req, res) => {
           message: 'You need at least 1 credit to perform an analysis. Please add credits to your account.'
         });
       }
-      
-      // Deduct 1 credit before starting analysis
-      console.log(`[JOBS] User ${userId} has sufficient credits (${creditCheck.currentCredit}), deducting 1 credit...`);
+    }
+
+    // Cache check (24h) - check after validating user has sufficient credits
+    const row = db.prepare('SELECT summary_json, positive_json, negative_json, store, timestamp FROM analyses WHERE app_id = ? LIMIT 1').get(finalAppId);
+    if (row) {
+      const ageMs = Date.now() - new Date(row.timestamp).getTime();
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+      if (ageMs <= twentyFourHours) {
+        // Cached result found - return without credit deduction
+        console.log(`[JOBS] Returning cached result for ${finalAppId} (age: ${Math.round(ageMs / (1000 * 60 * 60))}h) - no credit deducted`);
+        const summary = JSON.parse(row.summary_json);
+        const positiveAnalysis = row.positive_json ? JSON.parse(row.positive_json) : null;
+        const negativeAnalysis = row.negative_json ? JSON.parse(row.negative_json) : null;
+        const analysis = { appId: finalAppId, storeType: row.store, summary, positiveAnalysis, negativeAnalysis, timestamp: row.timestamp };
+        const cachedJob = createCompletedJobFromCache(finalAppId, row.store, analysis);
+        return res.json({ success: true, data: {
+          jobId: cachedJob.id,
+          appId: cachedJob.appId,
+          storeType: cachedJob.storeType,
+          status: cachedJob.status,
+          message: cachedJob.message,
+          createdAt: cachedJob.createdAt,
+          options: cachedJob.options,
+          result: cachedJob.result,
+        }});
+      }
+    }
+
+    // No cache hit - check for existing pending jobs to prevent duplicate work and charges
+    const existingJobs = getPendingJobsForApp(finalAppId, finalStoreType);
+    
+    if (existingJobs.length > 0) {
+      // Return existing job instead of creating a new one and charging again
+      const existingJob = existingJobs[0];
+      console.log(`[JOBS] Found existing job ${existingJob.id} for ${finalAppId} - no credit deducted`);
+      return res.json({
+        success: true,
+        data: {
+          jobId: existingJob.id,
+          appId: existingJob.appId,
+          storeType: existingJob.storeType,
+          status: existingJob.status,
+          message: 'Analysis already in progress',
+          createdAt: existingJob.createdAt,
+          options: existingJob.options,
+          result: existingJob.result,
+        }
+      });
+    }
+
+    // No cache hit and no existing jobs - proceed with new analysis and deduct credit
+    if (userId) {
+      console.log(`[JOBS] User ${userId} proceeding with new analysis, deducting 1 credit...`);
       const deductResult = await subtractUserCredit(userId, 1);
       if (!deductResult.success) {
         return res.status(500).json({

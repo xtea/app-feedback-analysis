@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Home from './components/Home';
 import Analysis from './components/Analysis';
 import Auth from './components/Auth';
+import PurchaseCredits from './components/PurchaseCredits';
 import Privacy from './components/Privacy';
 import Terms from './components/Terms';
 import Footer from './components/Footer';
@@ -33,6 +34,7 @@ function App() {
               <Route path="/login" element={<Auth />} />
               <Route path="/" element={<Home />} />
               <Route path="/analysis/:appId" element={<Analysis />} />
+              <Route path="/purchase-credits" element={<PurchaseCredits />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
             </Routes>

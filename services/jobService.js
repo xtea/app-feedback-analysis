@@ -184,6 +184,15 @@ function cleanupOldJobs(maxAge = 24 * 60 * 60 * 1000) { // 24 hours default
   }
 }
 
+// Get pending jobs for a specific app to prevent duplicate processing
+function getPendingJobsForApp(appId, storeType) {
+  return Array.from(jobs.values()).filter(job => 
+    job.appId === appId && 
+    job.storeType === storeType && 
+    (job.status === 'pending' || job.status === 'fetching_reviews' || job.status === 'analyzing')
+  );
+}
+
 // Auto cleanup every hour
 setInterval(cleanupOldJobs, 60 * 60 * 1000);
 
@@ -192,7 +201,8 @@ module.exports = {
   getJob,
   getJobsByAppId,
   JOB_STATUS,
-  cleanupOldJobs
+  cleanupOldJobs,
+  getPendingJobsForApp
 };
 
 // Create a completed job from cached analysis
