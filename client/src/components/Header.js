@@ -39,18 +39,18 @@ const Header = () => {
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!mounted) return;
+    // (async () => {
+    //   const { data } = await supabase.auth.getSession();
+    //   if (!mounted) return;
       
-      const email = data?.session?.user?.email || null;
-      setUserEmail(email);
+    //   const email = data?.session?.user?.email || null;
+    //   setUserEmail(email);
       
-      // Fetch credit balance if user is authenticated
-      if (data?.session?.user) {
-        await fetchCreditBalance(data.session);
-      }
-    })();
+    //   // Fetch credit balance if user is authenticated
+    //   if (data?.session?.user) {
+    //     await fetchCreditBalance(data.session);
+    //   }
+    // })();
     
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return;

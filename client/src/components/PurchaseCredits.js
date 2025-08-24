@@ -6,41 +6,20 @@ import { getUserCredit } from '../lib/creditService';
 const PurchaseCredits = () => {
   const navigate = useNavigate();
   const [currentCredits, setCurrentCredits] = useState(0);
-  const [selectedTier, setSelectedTier] = useState(null);
+  const [creditsToBuy, setCreditsToBuy] = useState(25); // Default to minimum
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [validationError, setValidationError] = useState('');
 
-  // Credit tiers with pricing
-  const creditTiers = [
-    {
-      id: 'starter',
-      credits: 10,
-      price: 1.00,
-      popular: false,
-      description: 'Perfect for trying out the platform'
-    },
-    {
-      id: 'professional',
-      credits: 50,
-      price: 5.00,
-      popular: true,
-      description: 'Great for regular app analysis'
-    },
-    {
-      id: 'business',
-      credits: 100,
-      price: 10.00,
-      popular: false,
-      description: 'Ideal for multiple app projects'
-    },
-    {
-      id: 'enterprise',
-      credits: 500,
-      price: 50.00,
-      popular: false,
-      description: 'Best value for large-scale analysis'
-    }
-  ];
+  // Pricing constants
+  const CREDITS_PER_DOLLAR = 5; // $1 = 5 credits
+  const MINIMUM_PURCHASE_USD = 5; // Minimum $5 purchase
+  const MINIMUM_CREDITS = MINIMUM_PURCHASE_USD * CREDITS_PER_DOLLAR; // 25 credits
+  const MAXIMUM_CREDITS = 5000; // Maximum 5000 credits
+  const PRICE_PER_CREDIT = 1 / CREDITS_PER_DOLLAR; // $0.20 per credit
+
+  // Calculate total price
+  const totalPrice = (creditsToBuy && !isNaN(creditsToBuy) ? (creditsToBuy * PRICE_PER_CREDIT).toFixed(2) : '0.00');
 
   const checkUser = useCallback(async () => {
     try {
@@ -71,15 +50,75 @@ const PurchaseCredits = () => {
     loadCurrentCredits();
   }, [checkUser, loadCurrentCredits]);
 
-  const handlePurchase = async (tier) => {
+  // Validate credit amount
+  const validateCredits = (value) => {
+    if (value === '' || value === null || value === undefined) {
+      return 'Please enter a number of credits';
+    }
+    
+    // Check if it's a valid number
+    const numValue = Number(value);
+    if (isNaN(numValue)) {
+      return 'Please enter a valid number';
+    }
+    
+    // Check if it's an integer (no decimals)
+    if (!Number.isInteger(numValue)) {
+      return 'Only whole numbers are allowed (no decimals)';
+    }
+    
+    // Check minimum range
+    if (numValue < MINIMUM_CREDITS) {
+      return `Minimum purchase is ${MINIMUM_CREDITS} credits ($${MINIMUM_PURCHASE_USD.toFixed(2)})`;
+    }
+    
+    // Check maximum range
+    if (numValue > MAXIMUM_CREDITS) {
+      return `Maximum purchase is ${MAXIMUM_CREDITS} credits ($${(MAXIMUM_CREDITS * PRICE_PER_CREDIT).toFixed(2)})`;
+    }
+    
+    return '';
+  };
+
+  // Handle credit input change
+  const handleCreditsChange = (e) => {
+    const value = e.target.value;
+    
+    // Allow empty string for better UX when user is typing
+    if (value === '') {
+      setCreditsToBuy('');
+      setValidationError('Please enter a number of credits');
+      return;
+    }
+    
+    // Only allow numeric input (integers only, no decimals)
+    const numericValue = value.replace(/[^0-9]/g, '');
+    
+    if (numericValue !== value) {
+      // If user tried to enter non-numeric characters, don't update
+      return;
+    }
+    
+    const intValue = parseInt(numericValue) || 0;
+    setCreditsToBuy(intValue);
+    setValidationError(validateCredits(intValue));
+  };
+
+  const handlePurchase = async () => {
+    const validation = validateCredits(creditsToBuy);
+    if (validation) {
+      setValidationError(validation);
+      return;
+    }
+
     setIsLoading(true);
     setError('');
-    setSelectedTier(tier.id);
+    setValidationError('');
 
     try {
       // TODO: Integrate with Stripe or payment processor
       // For now, we'll simulate the purchase
-      console.log(`Purchasing ${tier.credits} credits for $${tier.price}`);
+      console.log(`Purchasing ${creditsToBuy} credits for $${totalPrice}`);
       
       // Simulate payment processing delay
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -91,13 +130,17 @@ const PurchaseCredits = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
         },
-        body: JSON.stringify({ amount: tier.credits })
+        body: JSON.stringify({ amount: creditsToBuy })
       });
 
       if (response.ok) {
         await loadCurrentCredits();
+        // Refresh header credit display
+        if (window.refreshHeaderCredit) {
+          window.refreshHeaderCredit();
+        }
         // Show success message and redirect
-        alert(`Successfully purchased ${tier.credits} credits!`);
+        alert(`Successfully purchased ${creditsToBuy} credits for $${totalPrice}!`);
         navigate('/');
       } else {
         throw new Error('Failed to add credits');
@@ -107,7 +150,6 @@ const PurchaseCredits = () => {
       setError('Purchase failed. Please try again.');
     } finally {
       setIsLoading(false);
-      setSelectedTier(null);
     }
   };
 
@@ -196,75 +238,108 @@ const PurchaseCredits = () => {
           </div>
         )}
 
-        {/* Pricing Tiers */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-          {creditTiers.map((tier) => (
-            <div 
-              key={tier.id}
-              className={`relative bg-white rounded-2xl shadow-lg border-2 transition-all duration-300 hover:shadow-xl ${
-                tier.popular ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-300'
-              }`}
-            >
-              {tier.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium">
-                    Most Popular
-                  </span>
-                </div>
-              )}
-              
-              <div className="p-8">
-                <div className="text-center">
-                  <h3 className="text-2xl font-bold text-gray-900 capitalize mb-2">
-                    {tier.id}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-6">
-                    {tier.description}
-                  </p>
-                  
-                  <div className="mb-6">
-                    <div className="flex items-center justify-center space-x-2 mb-2">
-                      <span className="text-4xl font-bold text-gray-900">
-                        {tier.credits}
-                      </span>
-                      <span className="text-gray-600">credits</span>
-                    </div>
-                    <div className="flex items-center justify-center space-x-1">
-                      <span className="text-2xl font-semibold text-blue-600">
-                        ${tier.price.toFixed(2)}
-                      </span>
-                      <span className="text-gray-500 text-sm">
-                        (${(tier.price / tier.credits).toFixed(2)} per credit)
-                      </span>
-                    </div>
-                  </div>
+        {/* Custom Credit Purchase */}
+        <div className="max-w-2xl mx-auto mb-16">
+          <div className="bg-white rounded-2xl shadow-xl border-2 border-blue-200 p-8 md:p-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Choose Your Credits
+              </h2>
+              <p className="text-lg text-gray-600">
+                Enter the number of credits you'd like to purchase
+              </p>
+            </div>
 
-                  <button
-                    onClick={() => handlePurchase(tier)}
+            <div className="space-y-6">
+              {/* Credit Input */}
+              <div>
+                <label htmlFor="credits" className="block text-sm font-semibold text-gray-700 mb-3">
+                  Number of Credits
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    id="credits"
+                    min={MINIMUM_CREDITS}
+                    max={MAXIMUM_CREDITS}
+                    step="1"
+                    value={creditsToBuy || ''}
+                    onChange={handleCreditsChange}
+                    placeholder={`Enter ${MINIMUM_CREDITS} - ${MAXIMUM_CREDITS} credits`}
+                    className="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-200"
                     disabled={isLoading}
-                    className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 ${
-                      tier.popular
-                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    } ${
-                      isLoading && selectedTier === tier.id
-                        ? 'opacity-50 cursor-not-allowed'
-                        : 'hover:shadow-lg transform hover:-translate-y-1'
-                    }`}
-                  >
-                    {isLoading && selectedTier === tier.id ? (
-                      <div className="flex items-center justify-center space-x-2">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        <span>Processing...</span>
-                      </div>
-                    ) : (
-                      'Purchase'
-                    )}
-                  </button>
+                  />
+                </div>
+                {validationError && (
+                  <p className="mt-2 text-sm text-red-600">{validationError}</p>
+                )}
+              </div>
+
+              {/* Price Display */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-2xl font-bold text-blue-600">
+                      ${totalPrice}
+                    </div>
+                    <div className="text-sm text-gray-600">Total Cost</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-green-600">
+                      ${PRICE_PER_CREDIT.toFixed(2)}
+                    </div>
+                    <div className="text-sm text-gray-600">Per Credit</div>
+                  </div>
+                  <div>
+                    <div className="text-lg font-bold text-purple-600">
+                      {creditsToBuy && !isNaN(creditsToBuy) && creditsToBuy > 0 ? (
+                        <>
+                          <div className="text-sm text-gray-500 font-normal">
+                            {creditsToBuy.toLocaleString()} + {currentCredits.toLocaleString()} =
+                          </div>
+                          <div className="text-2xl">
+                            {(currentCredits + creditsToBuy).toLocaleString()}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-2xl">
+                          {currentCredits.toLocaleString()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-600">Total After Purchase</div>
+                  </div>
                 </div>
               </div>
+
+              {/* Purchase Button */}
+              <button
+                onClick={handlePurchase}
+                disabled={isLoading || !!validationError || !creditsToBuy || creditsToBuy < MINIMUM_CREDITS || creditsToBuy > MAXIMUM_CREDITS}
+                className={`w-full py-4 px-8 rounded-xl font-bold text-lg transition-all duration-200 ${
+                  isLoading || !!validationError || !creditsToBuy || creditsToBuy < MINIMUM_CREDITS || creditsToBuy > MAXIMUM_CREDITS
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1'
+                }`}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                    <span>Processing Payment...</span>
+                  </div>
+                ) : (
+                  `Purchase ${creditsToBuy && !isNaN(creditsToBuy) ? creditsToBuy.toLocaleString() : '0'} Credits for $${totalPrice}`
+                )}
+              </button>
+
+              {/* Purchase Range Note */}
+              <div className="text-center">
+                <p className="text-sm text-gray-500">
+                  Purchase range: {MINIMUM_CREDITS} - {MAXIMUM_CREDITS} credits (${MINIMUM_PURCHASE_USD.toFixed(2)} - ${(MAXIMUM_CREDITS * PRICE_PER_CREDIT).toFixed(2)})
+                </p>
+              </div>
             </div>
-          ))}
+          </div>
         </div>
 
         {/* Benefits Section */}
@@ -301,17 +376,21 @@ const PurchaseCredits = () => {
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Simple, Fair Pricing
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
               <div>
-                <div className="text-3xl font-bold text-blue-600">$0.10</div>
+                <div className="text-3xl font-bold text-blue-600">${PRICE_PER_CREDIT.toFixed(2)}</div>
                 <div className="text-gray-600">per credit</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-green-600">1</div>
+                <div className="text-3xl font-bold text-green-600">{CREDITS_PER_DOLLAR}</div>
+                <div className="text-gray-600">credits per $1</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-purple-600">1</div>
                 <div className="text-gray-600">credit per app</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-purple-600">∞</div>
+                <div className="text-3xl font-bold text-orange-600">∞</div>
                 <div className="text-gray-600">report access</div>
               </div>
             </div>
