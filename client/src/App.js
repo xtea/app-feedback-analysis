@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Home from './components/Home';
 import Analysis from './components/Analysis';
 import Auth from './components/Auth';
+import PasswordReset from './components/PasswordReset';
 import PurchaseCredits from './components/PurchaseCredits';
 import Privacy from './components/Privacy';
 import Terms from './components/Terms';
@@ -32,6 +33,7 @@ function App() {
           <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
             <Routes>
               <Route path="/login" element={<Auth />} />
+              <Route path="/reset" element={<PasswordReset />} />
               <Route path="/" element={<Home />} />
               <Route path="/analysis/:appId" element={<Analysis />} />
               <Route path="/purchase-credits" element={<PurchaseCredits />} />

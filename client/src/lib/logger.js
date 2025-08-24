@@ -20,6 +20,15 @@ export const logger = {
       });
     },
     
+    passwordReset: (action, data) => {
+      console.log(`🔄 Auth Password Reset [${action}]:`, {
+        ...data,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      });
+    },
+    
     error: (error, context = {}) => {
       console.error('❌ Auth Error:', {
         message: error.message,

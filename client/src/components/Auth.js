@@ -10,6 +10,7 @@ export default function AuthPage() {
   const location = useLocation();
   const redirectTo = (location.state && location.state.redirectTo) || '/';
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -176,8 +177,57 @@ export default function AuthPage() {
     }
   };
 
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      logger.auth.passwordReset('STARTED', { email });
+      trackEvent('password_reset_submit');
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset`,
+      });
+      
+      if (error) {
+        logger.auth.error(error, { 
+          operation: 'password_reset',
+          email
+        });
+        setError(error.message);
+      } else {
+        logger.auth.passwordReset('SUCCESS', { email });
+        setMessage('Check your email for the password reset link!');
+        trackEvent('password_reset_success');
+      }
+    } catch (err) {
+      logger.auth.error(err, {
+        operation: 'password_reset_catch',
+        email
+      });
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleMode = () => {
-    setIsSignUp(!isSignUp);
+    if (isPasswordReset) {
+      setIsPasswordReset(false);
+    } else {
+      setIsSignUp(!isSignUp);
+    }
+    setError('');
+    setMessage('');
+    setPassword('');
+    setConfirmPassword('');
+  };
+
+  const showPasswordReset = () => {
+    setIsPasswordReset(true);
+    setIsSignUp(false);
     setError('');
     setMessage('');
     setPassword('');
@@ -193,13 +243,13 @@ export default function AuthPage() {
         <div className="bg-white/90 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-xl border border-white/50 p-6 sm:p-8">
           <div className="text-center mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-              {isSignUp ? 'Create Account' : 'Welcome Back'}
+              {isPasswordReset ? 'Reset Password' : isSignUp ? 'Create Account' : 'Welcome Back'}
             </h2>
             <p className="text-gray-600 mt-2 text-sm sm:text-base">
-              {isSignUp ? 'Transform your app with AI-powered review insights' : 'Sign in to continue your analysis'}
+              {isPasswordReset ? 'Enter your email to receive a password reset link' : isSignUp ? 'Transform your app with AI-powered review insights' : 'Sign in to continue your analysis'}
             </p>
           </div>
-          <form onSubmit={handleAuth} className="space-y-5 sm:space-y-6">
+          <form onSubmit={isPasswordReset ? handlePasswordReset : handleAuth} className="space-y-5 sm:space-y-6">
             {/* Email Field */}
             <div>
               <div className="relative">
@@ -218,34 +268,36 @@ export default function AuthPage() {
               </div>
             </div>
 
-            {/* Password Field */}
-            <div>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+            {/* Password Field (hidden in password reset mode) */}
+            {!isPasswordReset && (
+              <div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="block w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/50 hover:bg-white focus:bg-white text-sm sm:text-base"
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 hover:text-gray-600" />
+                    ) : (
+                      <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 hover:text-gray-600" />
+                    )}
+                  </button>
                 </div>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/50 hover:bg-white focus:bg-white text-sm sm:text-base"
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 hover:text-gray-600" />
-                  ) : (
-                    <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 hover:text-gray-600" />
-                  )}
-                </button>
               </div>
-            </div>
+            )}
 
             {/* Confirm Password Field (Sign Up Only) */}
             {isSignUp && (
@@ -264,6 +316,19 @@ export default function AuthPage() {
                     placeholder="Confirm your password"
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Forgot Password Link (only show in login mode) */}
+            {!isSignUp && !isPasswordReset && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={showPasswordReset}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-200"
+                >
+                  Forgot Password?
+                </button>
               </div>
             )}
 
@@ -292,19 +357,37 @@ export default function AuthPage() {
               {loading ? (
                 <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin mr-2" />
               ) : null}
-              {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}
+              {loading ? 'Processing...' : isPasswordReset ? 'Send Reset Link' : isSignUp ? 'Create Account' : 'Sign In'}
             </button>
           </form>
 
-          {/* Toggle Sign Up/Sign In */}
-          <div className="mt-6 text-center">
+          {/* Toggle Sign Up/Sign In/Password Reset */}
+          <div className="mt-6 text-center space-y-2">
             <button
               type="button"
               onClick={toggleMode}
               className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-200"
             >
-              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+              {isPasswordReset ? 'Back to Sign In' : isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
             </button>
+            
+            {/* Additional toggle for sign up mode when in password reset */}
+            {isPasswordReset && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPasswordReset(false);
+                    setIsSignUp(true);
+                    setError('');
+                    setMessage('');
+                  }}
+                  className="text-sm text-gray-500 hover:text-gray-700 font-medium hover:underline transition-colors duration-200"
+                >
+                  Don't have an account? Sign up
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Back to Home */}
